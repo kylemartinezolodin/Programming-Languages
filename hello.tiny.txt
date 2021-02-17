@@ -1,1 +1,2 @@
-PRINT "hello, world!"
+VAR abc = 10 AS INT
+PRINT abc

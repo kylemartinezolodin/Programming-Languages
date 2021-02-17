@@ -17,7 +17,7 @@ class Lexer:
     # Process the next character.
     def nextChar(self):
         self.curPos += 1
-        self.curLine += 1 
+        self.curCol += 1 
         if self.curPos >= len(self.source):
             self.curChar = '\0'  # EOF
         else:
@@ -31,7 +31,7 @@ class Lexer:
 
     # Invalid token found, print error message and exit.
     def abort(self, message):
-        sys.exit("Lexing error @ line " +str(self.curLine) +", col " +str(self.curCol) +"\n" + message)
+        sys.exit("Lexical error @ line " +str(self.curLine) +", col " +str(self.curCol) +"\n" + message)
 		
     # Skip whitespace except newlines, which we will use to indicate the end of a statement.
     def skipWhitespace(self):
@@ -59,12 +59,15 @@ class Lexer:
         elif self.curChar == '\0':
             token = Token('', TokenType.EOF)
 
+    # COMMA HANDLING!
+        elif self.curChar == ',':
+            token = Token(self.curChar, TokenType.COMMA)
     # OPERATOR HANDLER
         # Check the first character of this token to see if we can decide what it is.
         # If it is a multiple character operator (e.g., !=), number, identifier, or keyword then we will process the rest.
         
         elif self.curChar == '=':
-            token = Token(self.curChar, TokenType.EQ)
+            token = Token(self.curChar, TokenType.EQUAL)
         elif self.curChar == '+':
             token = Token(self.curChar, TokenType.PLUS)
         elif self.curChar == '-':
@@ -73,9 +76,48 @@ class Lexer:
             token = Token(self.curChar, TokenType.ASTERISK)
         elif self.curChar == '/':
             token = Token(self.curChar, TokenType.SLASH)
-        
+    
+    # BOOLEAN INPUT HANDLER
+        elif self.curChar == '\'':
+            startPos = self.curPos
+            while self.peek() != '\'':
+                self.nextChar()
+            
+            tokText = self.source[startPos + 1 : self.curPos + 1] # Get the substring.
+            if(tokText == "TRUE" or tokTest == "FALSE"):
+                self.nextChar()
+                token = Token(tokText, TokenType.STRING)
+            else: 
+                # Error!
+                self.abort("Boolean value must be true or false only.")
 
-    # NUBER HANDLER
+    # CHARACTER INPUT HANDLER
+        elif self.curChar == '\'':
+            i = 0 
+            startPos = self.curPos
+            while self.peek() != '\'':
+                i+=1
+                self.nextChar()
+            
+            if(i == 1):
+                tokText = self.source[startPos + 1 : self.curPos + 1] # Get the substring.
+                self.nextChar()
+                token = Token(tokText, TokenType.ICHAR)
+            else: 
+                # Error!
+                self.abort("Character must only be one.")
+
+    # STRING HANDLER #BAG-OH NI
+        elif self.curChar == "\"":
+            string = ""
+            self.nextChar()
+            while self.curChar != "\"":
+                string += str(self.curChar)
+                self.nextChar()
+
+            token = Token(string, TokenType.STRING)
+
+    # NUMBER HANDLER
         elif self.curChar.isdigit():
             # Leading character is a digit, so this must be a number.
             # Get all consecutive digits and decimal if there is one.
@@ -92,9 +134,11 @@ class Lexer:
                 while self.peek().isdigit():
                     self.nextChar()
 
-            tokText = self.source[startPos : self.curPos + 1] # Get the substring.
-            token = Token(tokText, TokenType.NUMBER)
-        
+                tokText = self.source[startPos : self.curPos + 1] # Get the substring.
+                token = Token(tokText, TokenType.FNUMBER)
+            else:
+                tokText = self.source[startPos : self.curPos + 1] # Get the substring.
+                token = Token(tokText, TokenType.INUMBER)
     # IDENTIFIER HANDLER
         elif self.curChar.isalpha(): # IF IT IS ALPHANUMERIC
             # Leading character is a letter, so this must be an identifier or a keyword.
@@ -102,14 +146,19 @@ class Lexer:
             startPos = self.curPos
             while self.peek().isalnum():
                 self.nextChar()
-
+            
             # Check if the token is in the list of keywords.
             tokText = self.source[startPos : self.curPos + 1] # Get the substring.
             keyword = Token.checkIfKeyword(tokText)
             if keyword == None: # Identifier
-                token = Token(tokText, TokenType.IDENT)
+                if tokText == "OUTPUT":
+                    if self.peek() == ':':
+                        token = Token(tokText, keyword)            
+                        self.nextChar()
+                else:
+                    token = Token(tokText, TokenType.IDENT)
             else:   # Keyword
-                token = Token(tokText, keyword)
+                token = Token(tokText, keyword)            
 
     # UNKNOWN TOKEN HANDLING!
         else:
@@ -135,20 +184,31 @@ class Token:
                 return kind
         return None
 
-# THIS CLASS' MAIN ROLE IS TO CLASSIFY THE TOKEN, WHERE ALL RESERVED WORD ARE DEFINED HERE
+# THIS CLASS' MAIN ROLE IS TO CLASSIFY THE TOKEN, WHERE ALL RESERVED WORDS ARE DEFINED HERE
 # MAG SABOT SA GURO TAS RESERVED WORD GAMITON SA ATO LANGUAGE
+
 class TokenType(enum.Enum):
     EOF = -1
     NEWLINE = 0
-    NUMBER = 1
-    IDENT = 2
-    STRING = 3
+    INUMBER = 1  # INT NUMBER
+    FNUMBER = 2  # FLOAT NUMBER  
+    IDENT = 3
+    STRING = 4
+    COMMA = 5
+    ICHAR = 6   # INPUT CHAR
+
 
 	# Keywords.
     START = 101
     STOP = 102
     INT = 103
     PRINT = 104
+    VAR = 105
+    AS = 106
+    OUTPUT = 107
+    FLOAT = 108
+    BOOL = 109
+    CHAR = 110
     # LABEL = 101
 	# GOTO = 102
 	# PRINT = 103
@@ -162,7 +222,7 @@ class TokenType(enum.Enum):
 	# ENDWHILE = 111
 
 	# Operators.
-    EQ = 201  
+    EQUAL = 201  
     PLUS = 202
     MINUS = 203
     ASTERISK = 204
