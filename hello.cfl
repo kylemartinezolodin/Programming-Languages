@@ -1,10 +1,10 @@
 VAR qwe = 6, qew = 26 - (3 * 2), poi = 33 AS INT
-OUTPUT: qwe & qew
+*OUTPUT: qwe & "natug mo!" & qew
 VAR asd = -10, das = 91 - 1 AS INT
 VAR ming = "TRUE" AS BOOL
 OUTPUT: das & " AMAWA " & ming
 WHILE (asd < 0) START
-   OUTPUT: "meow[#] " & asd & "# food"
+   *OUTPUT: "meow[#] " & asd & "# food"
    asd = asd + 1
    OUTPUT: "["]asd["] value: [[]" & asd & "], is it greater than 5? " & asd>(-6+1)
 STOP

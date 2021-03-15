@@ -42,6 +42,11 @@ class Lexer:
     def skipComment(self):
         pass
     
+    # Skip comments in the code.
+    def skipComment(self):
+        while self.curChar != '\n':
+            self.nextChar()
+    
     def peekToken(self):
         # SAVE CURRENT VALUES OF EACH PROPERTIES
         revertChar = self.curChar
@@ -75,6 +80,12 @@ class Lexer:
     # End-of-file HANDLER
         elif self.curChar == '\0':
             token = self.tokenize(self.curChar)
+            
+    # # COMMENT HANDLER
+    #     elif self.curChar == '*' and (self.curPos == 1 or self.source[self.curPos - 1] == " "): # IF ASTERISK 
+    #         print("ignore comments")
+    #         while self.curChar != "\n":
+    #             self.nextChar()
 
     # COMMA HANDLING!
         elif self.curChar == ',':

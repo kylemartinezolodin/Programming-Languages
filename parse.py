@@ -89,6 +89,11 @@ class Parser:
         # Parse all the statements in the program. Will continue to call statement until there is nothing left.
         while not self.checkToken(TokenType.EOF):
             self.statement()
+            
+        if self.debug:
+            print("PARSER: DEBUG PROPERTY IS SET TO TRUE, TURN TO FALSE TO DISABLE UNESSACARY PRINTS")
+        else:
+           print("PARSER: DEBUG PROPERTY IS SET TO FALSE, TURN TO TRUE TO PRINTS DEBUG OUTPUT MARKERS") 
 
     # statement ::= "OUTPUT:" (expression | string) nl
    
@@ -214,6 +219,11 @@ class Parser:
             identifier.value = self.reassign_Statment()
             
             # self.reassign_Statment()
+
+        elif self.checkToken(TokenType.ASTERISK):
+            self.debugPrint("COMMENT STATEMENT")
+            while not self.checkToken(TokenType.NEWLINE):
+                self.nextToken()
 
        # This is not a valid statement. Error!
         else:
