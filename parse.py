@@ -502,10 +502,10 @@ class Parser:
                 self.nextToken()
                 return identType
             else:
-                self.abort("Expecting Data-Type definition [CHAR | INT | FLOAT | BOOL], got " +self.curToken.kind)
+                self.abort("Expecting Data-Type definition [CHAR | INT | FLOAT | BOOL], got " +self.curToken.kind.name)
         
         else: # ERROR 
-            self.abort("Expecting \",\" [COMMA] | \"AS\" keyword, got " +self.curToken.kind)
+            self.abort("Expecting \",\" [COMMA] | \"AS\" keyword, got " +self.curToken.kind.name)
 
 
     # expression ::= term {( "-" | "+" ) | term}  #BAG-OH NI #WTF FIX THIS
@@ -514,53 +514,72 @@ class Parser:
 
         left = self.term()
 
-        # 0 OR MORE ARITHMETIC OR LOGICAL EXPRESSION
-        while self.checkToken(TokenType.PLUS) or self.checkToken(TokenType.MINUS) or self.checkToken(TokenType.EEQUAL) or self.checkToken(TokenType.NEQUAL) or self.checkToken(TokenType.GEQUAL) or self.checkToken(TokenType.GREATER) or self.checkToken(TokenType.LEQUAL) or self.checkToken(TokenType.LESSER):
-            operatorToken = self.curToken # WE EXPECT self.curToken TO BE A ARITHMETIC OR LOGICAL OPERATOR 
-            self.nextToken()
+        if self.checkToken(TokenType.OR) or  self.checkToken(TokenType.AND):
+            while self.checkToken(TokenType.OR) or  self.checkToken(TokenType.AND):
+                operatorToken = self.curToken # WE EXPECT self.curToken TO BE A BOOLEAN KEYWORD 
+                self.nextToken()
 
-            right = self.term()
-            if type(left) == bool or type(right) == bool: # THERE ARE ONLY TWO TYPES WE SHOULD EXPECT, A NUMERICAL CHECKS IF THE VALUES ARE CONSISTENLY NUMERICAL
-                self.abort("A BOOLEAN isn't supposed to be used for arithmethic or relational operation")
-
-            # WE EXECUTE OPERATION BASED ON THE PREVIOUS TOKEN WE ASSUMED TO BE AN OPERATOR
-            # ARITHMETHIC
-            if operatorToken.kind == TokenType.PLUS: 
-                left += right
-            elif operatorToken.kind == TokenType.MINUS:
-                left -= right
+                right = self.term()
+                if type(left) != bool or type(right) != bool: # WE ONLY EXPECT AND BOOLEAN VALUE
+                    self.abort("A NUMERICALS isn't supposed to be used for boolean operation")
                 
-            # RELATIONAL
-            elif operatorToken.kind == TokenType.EEQUAL:
-                left = left == right
-            elif operatorToken.kind == TokenType.NEQUAL:
-                left = left != right
-            elif operatorToken.kind == TokenType.GEQUAL:
-                left = left >= right
-            elif operatorToken.kind == TokenType.GREATER:
-                left = left > right
-            elif operatorToken.kind == TokenType.LEQUAL:
-                left = left <= right
-            elif operatorToken.kind == TokenType.LESSER:
-                left = left < right
-            else:
-                self.abort("Expecting ARITHMETIC [+/-] operators or RELATIONAL [==/<>/>=/>/<=/<] operators in the expression")
+                if operatorToken.kind == TokenType.OR: 
+                    left = left or right
+                elif operatorToken.kind == TokenType.AND:
+                    left = left and right
+                else:
+                    self.abort("Expecting BOOLEAN [AND/OR] keywords in the expression")
+
+
+        # 0 OR MORE ARITHMETIC OR LOGICAL EXPRESSION
+        else:
+            while self.checkToken(TokenType.PLUS) or self.checkToken(TokenType.MINUS) or self.checkToken(TokenType.EEQUAL) or self.checkToken(TokenType.NEQUAL) or self.checkToken(TokenType.GEQUAL) or self.checkToken(TokenType.GREATER) or self.checkToken(TokenType.LEQUAL) or self.checkToken(TokenType.LESSER):
+                operatorToken = self.curToken # WE EXPECT self.curToken TO BE A ARITHMETIC OR LOGICAL OPERATOR 
+                self.nextToken()
+
+                right = self.term()
+                if type(left) == bool or type(right) == bool: # THERE ARE ONLY TWO TYPES WE SHOULD EXPECT, A NUMERICAL CHECKS IF THE VALUES ARE CONSISTENLY NUMERICAL
+                    self.abort("A BOOLEAN isn't supposed to be used for arithmethic or relational operation")
+
+                # WE EXECUTE OPERATION BASED ON THE PREVIOUS TOKEN WE ASSUMED TO BE AN OPERATOR
+                # ARITHMETHIC
+                if operatorToken.kind == TokenType.PLUS: 
+                    left += right
+                elif operatorToken.kind == TokenType.MINUS:
+                    left -= right
+                    
+                # RELATIONAL
+                elif operatorToken.kind == TokenType.EEQUAL:
+                    left = left == right
+                elif operatorToken.kind == TokenType.NEQUAL:
+                    left = left != right
+                elif operatorToken.kind == TokenType.GEQUAL:
+                    left = left >= right
+                elif operatorToken.kind == TokenType.GREATER:
+                    left = left > right
+                elif operatorToken.kind == TokenType.LEQUAL:
+                    left = left <= right
+                elif operatorToken.kind == TokenType.LESSER:
+                    left = left < right
+                else:
+                    self.abort("Expecting ARITHMETIC [+/-] operators or RELATIONAL [==/<>/>=/>/<=/<] operators in the expression")
 
         return left
         
-    # term ::= (unary {( "/" | "*" ) | unary}) | (expression)
+    # term ::= unary {( "/" | "*" ) unary}
     def term(self):
         self.debugPrint("term()")
 
-        if self.checkToken(TokenType.PARAN_OPEN):
-            self.debugPrint("OPEN-PARAN")
-            self.nextToken()
-            left = self.expression()
-            self.matchCurrent_Token(TokenType.PARAN_CLOSE)
-            self.debugPrint("CLOSE-PARAN")
-            self.nextToken()
-        else:
-            left = self.unary()
+        left = self.unary()
+        # if self.checkToken(TokenType.PARAN_OPEN):
+        #     self.debugPrint("OPEN-PARAN")
+        #     self.nextToken()
+        #     left = self.expression()
+        #     self.matchCurrent_Token(TokenType.PARAN_CLOSE)
+        #     self.debugPrint("CLOSE-PARAN")
+        #     self.nextToken()
+        # else:
+        #     left = self.unary()
 
         # Can have 0 or more *// and expressions.
         while self.checkToken(TokenType.ASTERISK) or self.checkToken(TokenType.SLASH):
@@ -579,22 +598,38 @@ class Parser:
 
         return left
 
-    # unary ::= ["+" | "-"] primary
+    # unary ::= ("+" | "-") (<numrical_primary>|<expression>)) | ("NOT") (<boolean_primary>|<expression>)) 
     def unary(self):
         self.debugPrint("unary()")
         result = None
 
         sign = 1
-        # Optional unary +/-
+        hasReadNotKeyword = False # A FLAG IF THE "NOT" KEYWORD HAS BEEN READ
+        # OPTIONAL UNARRY/PREFFIX [ + | - | NOT ]
         if self.checkToken(TokenType.PLUS):
             self.nextToken()
         elif self.checkToken(TokenType.MINUS):
             sign = -1
             self.nextToken()
+        elif self.checkToken(TokenType.NOT):
+            hasReadNotKeyword = True
+            self.nextToken()
 
-        result = self.primary()
+        # IF IT READS A PRENTHESIS IT LIKELY TO BE AN EXPRESSION        
+        if self.checkToken(TokenType.PARAN_OPEN):
+            self.debugPrint("OPEN-PARAN")
+            self.nextToken()
+            result = self.expression()
+            self.matchCurrent_Token(TokenType.PARAN_CLOSE)
+            self.debugPrint("CLOSE-PARAN")
+            self.nextToken()
+        else:
+            result = self.primary()
+
         if type(result) != bool: # IF NOT A BOOLEAN VALUE
             result = sign * result
+        elif type(result) == bool and hasReadNotKeyword: 
+            result = not result
         return result
         
     def primary(self): #BAG-OH NI

@@ -1,5 +1,14 @@
+* PAY ATTENTION TO THE STATEMENT BELLOW AND ITS OUPUT
+VAR msk = NOT "FALSE" OR (6 < 7) AS BOOL
+OUTPUT: "NOT ["]FALSE["] OR (6 < 7): " & msk 
+
+*COMPARE THIS STATEMENT AND ITS OUTPUT TO THE STATMENT EARLIER
+msk = NOT ("FALSE" OR (6 < 7))
+OUTPUT: "NOT (["]FALSE["] OR (6 < 7)): " & msk
+
 VAR qwe = 6, qew = 26 - (3 * 2), poi = 33 AS INT
 *OUTPUT: qwe & "natug mo!" & qew
+
 VAR asd = -10, das = 91 - 1 AS INT
 VAR ming = "TRUE" AS BOOL
 OUTPUT: das & " AMAWA " & ming

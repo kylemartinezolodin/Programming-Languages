@@ -41,7 +41,7 @@ class Lexer:
     # Skip comments in the code.
     def skipComment(self):
         pass
-    
+
     # Skip comments in the code.
     def skipComment(self):
         while self.curChar != '\n':
@@ -426,9 +426,9 @@ class TokenType(enum.Enum):
 	# ENDWHILE = 111
 
 	# Operators.
-    NOT = 198 # RECOGNIZE AS KEYWORD ALSO
-    OR = 199 # RECOGNIZE AS KEYWORD ALSO
-    AND = 200 # RECOGNIZE AS KEYWORD ALSO
+    NOT = 197 # RECOGNIZE AS KEYWORD ALSO
+    OR = 198 # RECOGNIZE AS KEYWORD ALSO
+    AND = 199 # RECOGNIZE AS KEYWORD ALSO
     EQUAL = 201  
     PLUS = 202
     MINUS = 203
