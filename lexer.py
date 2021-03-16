@@ -74,7 +74,7 @@ class Lexer:
     # NEWLINE HANDLER
         if self.curChar == '\n':
             self.curLine += 1
-            self.curCol = 1
+            self.curCol = 0
             token = self.tokenize('\n')
 
     # End-of-file HANDLER
@@ -153,7 +153,7 @@ class Lexer:
 
     # CHARACTER INPUT HANDLER
         elif self.curChar == '\'':
-            tokText = self.source[startPos: self.curPos + 2] # Get the substring.
+            tokText = self.source[self.curPos: self.curPos + 3] # Get the substring.
             self.nextChar() # AFTER THE CALL WE EXPECT A CHARACTER 
             self.nextChar() # AFTER THE CALL WE EXPECT SINGLE APOSTROPHE
             
@@ -312,10 +312,13 @@ class Lexer:
     # CHARACTER INPUT HANDLER
         elif text[0] == '\'':
             
-            if text[2] == '\'' or len(text) > 3: # Error!
-                token = Token(text, None) # UNRECOGNIZED TOKEN
+            if len(text) >= 3: # Error!
+                if text[2] != '\'': # Error!
+                    token = Token(text, None) # UNRECOGNIZED TOKEN
+                else:
+                    token = Token(text[1], TokenType.LITERAL_CHAR) # DO NOT INCLUDE SINGLE QOUTATION MARKS
             else: 
-                token = Token(text, TokenType.LITERAL_CHAR)
+                token = Token(text[1], TokenType.LITERAL_CHAR) # DO NOT INCLUDE SINGLE QOUTATION MARKS
 
     # OUTPUT(PRINT) CONCATENATION
         elif text == '&':

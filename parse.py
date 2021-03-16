@@ -475,11 +475,16 @@ class Parser:
         # AFTER THE EXISTENCE CHECK WE CAN EXPECT AN EQUALS
         if self.checkToken(TokenType.EQUAL):
             self.nextToken() # TOKEN BEFORE THE CALL: "=", AFTER THIS CALL WE SHOULD EXPECT A VALUE FOR THE DECLARED VARIABLE
+        
+        # APPROARCH v1.1
+            tempSymbol.value = self.expression()
 
-            if self.checkToken(TokenType.LITERAL_CHAR) or self.checkToken(TokenType.STRING):
-                tempSymbol.value = str(self.curToken.text)
-            else: # FOR VALUES THAT IS NOT A CHAR OR STRING, VERY LIKELY TO BE AN EXPRESSION
-                tempSymbol.value = self.expression()
+        # APPROARCH v1
+            # if self.checkToken(TokenType.LITERAL_CHAR) or self.checkToken(TokenType.STRING):
+            #     tempSymbol.value = str(self.curToken.text)
+            #     self.nextToken() 
+            # else: # FOR VALUES THAT IS NOT A CHAR OR STRING, VERY LIKELY TO BE AN EXPRESSION
+            #     tempSymbol.value = self.expression()
 
 
         # AFTER THE EXISTENCE CHECK WE CAN ALSO EXPECT A COMMA OR "AS" KEYWORD
@@ -520,8 +525,11 @@ class Parser:
                 self.nextToken()
 
                 right = self.term()
-                if type(left) != bool or type(right) != bool: # WE ONLY EXPECT AND BOOLEAN VALUE
-                    self.abort("A NUMERICALS isn't supposed to be used for boolean operation")
+                # WE ONLY EXPECT BOOLEAN VALUE
+                if type(left) == str or type(right) == str:
+                    self.abort("A CHAR/STRING isn't supposed to be used for boolean operation")
+                elif type(left) != bool or type(right) != bool:
+                    self.abort("A NUMERIC value isn't supposed to be used for boolean operation")
                 
                 if operatorToken.kind == TokenType.OR: 
                     left = left or right
@@ -538,7 +546,10 @@ class Parser:
                 self.nextToken()
 
                 right = self.term()
-                if type(left) == bool or type(right) == bool: # THERE ARE ONLY TWO TYPES WE SHOULD EXPECT, A NUMERICAL CHECKS IF THE VALUES ARE CONSISTENLY NUMERICAL
+                # WE ONLY EXPECT NUMERICAL VALUE
+                if type(left) == str or type(right) == str:
+                    self.abort("A CHAR/STRING isn't supposed to be used for arithmethic or relational operation")
+                elif type(left) == bool or type(right) == bool:
                     self.abort("A BOOLEAN isn't supposed to be used for arithmethic or relational operation")
 
                 # WE EXECUTE OPERATION BASED ON THE PREVIOUS TOKEN WE ASSUMED TO BE AN OPERATOR
@@ -587,8 +598,11 @@ class Parser:
             self.nextToken()
 
             right = self.unary()
-            if type(left) == bool or type(right) == bool: # CHECKS IF THE VALUES ARE CONSISTENLY NUMERICAL
+            # CHECKS IF THE VALUES ARE CONSISTENLY NUMERICAL
+            if type(left) == bool or type(right) == bool: 
                 self.abort("A BOOLEAN isn't supposed to be used for numerical operation")
+            elif type(left) == str or type(right) == str:
+                self.abort("A CHAR/STRING isn't supposed to be used for numerical operation")
                 
             # WE EXECUTE OPERATION BASED ON THE PREVIOUS TOKEN WE ASSUMED TO BE AN OPERATOR
             if operatorToken.kind == TokenType.ASTERISK:
@@ -626,10 +640,15 @@ class Parser:
         else:
             result = self.primary()
 
-        if type(result) != bool: # IF NOT A BOOLEAN VALUE
-            result = sign * result
-        elif type(result) == bool and hasReadNotKeyword: 
+        if type(result) == bool and hasReadNotKeyword: 
             result = not result
+        elif type(result) == str:
+            if hasReadNotKeyword:
+                self.abort("Cannot negate CHAR/STRING,, NOT operator is used in BOOLEAN values")
+            elif sign == -1:
+                self.abort("Cannot negate CHAR/STRING, \"-\" [NEGATION] operator is used in numerical values")
+        elif type(result) != bool: # IF NOT A BOOLEAN VALUE
+            result = sign * result
         return result
         
     def primary(self): #BAG-OH NI
@@ -641,11 +660,11 @@ class Parser:
         elif self.checkToken(TokenType.FNUMBER):
             value = float(self.curToken.text)
 
-        # elif self.checkToken(TokenType.LITERAL_CHAR):
-        #     pass
+        elif self.checkToken(TokenType.LITERAL_CHAR):
+            value = self.curToken.text
 
-        # elif self.checkToken(TokenType.STRING):
-        #     pass
+        elif self.checkToken(TokenType.STRING):
+            value = self.curToken.text
         
         elif self.checkToken(TokenType.IDENT): 
             value = self.symbol_table.lookup(self.curToken.text).value
