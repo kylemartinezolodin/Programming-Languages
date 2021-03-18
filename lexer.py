@@ -107,13 +107,16 @@ class Lexer:
                 self.nextChar()
                 token = self.tokenize("<>")
             elif self.peek() == '=':
+                self.nextChar()
                 token = self.tokenize("<=")
             else:
                 token = self.tokenize("<")
         elif self.curChar == '>':
-                token = self.tokenize(">")
-        elif self.curChar == '>=':
+            if self.peek() == '=':
+                self.nextChar()
                 token = self.tokenize(">=")
+            else:
+                token = self.tokenize(">")
         elif self.curChar == '+':
             token = self.tokenize("+")
         elif self.curChar == '-':
@@ -169,6 +172,7 @@ class Lexer:
             # Get all consecutive digits and decimal if there is one.
             startPos = self.curPos
             hasAlreadyFoundDecimal = False
+            
             while self.peek().isdigit() or self.peek() == '.':
                 if self.curChar == ".":
                     if hasAlreadyFoundDecimal:
@@ -264,11 +268,11 @@ class Lexer:
             token = Token("<>", TokenType.NEQUAL)
         elif text == '>':
             token = Token(">", TokenType.GREATER)
-        elif self.curChar == '>=':
+        elif text == '>=':
             token = Token(self.curChar, TokenType.GEQUAL)
         elif text == '<':
             token = Token(self.curChar, TokenType.LESSER)
-        elif self.curChar == '<=':
+        elif text == '<=':
             token = Token(self.curChar, TokenType.LEQUAL)
 
     # DOUBLE APPOSTROPHE HANDLER
@@ -329,18 +333,23 @@ class Lexer:
             
             # Get all consecutive digits until it encounters not digits such as decimal-point.
             i = 0
+    
             while i < len(text):
                 if text[i].isdigit():
                     i += 1
+                else:
+                    break
 
             if i < len(text):
                 if text[i] == '.': # Decimal!
                     # Must have at least one digit after decimal.
-                    while i < len(text):
+                    while i < len(text)-1:
                         if not text[i+1].isdigit(): # Error!
                             token = Token(text, None) # UNRECOGNIZED TOKEN
                             break
-
+                        else: 
+                            i+=1
+                    
                     token = Token(text, TokenType.FNUMBER)
             else:
                 token = Token(text, TokenType.INUMBER)
@@ -360,7 +369,10 @@ class Lexer:
             else:
                 keyword = Token.checkIfKeyword(text)
                 if keyword == None: # IF IT IS NOT RECOGNIZED AS KEYWORD THEN IT COULD BE AN IDENTIFIER
-                    token = Token(text, TokenType.IDENT)
+                    if Token.checkIfKeyword(text.upper()):
+                        self.abort(text + " must be capitalized!")
+                    else:
+                        token = Token(text, TokenType.IDENT)
 
                 else: # A KEYWORD
                     token = Token(text, keyword)            
@@ -369,7 +381,7 @@ class Lexer:
         else:
             # MESSAGE FORMAT:
             #   Unknown token!
-            #   Starting character [INT CODE] is 97 as "a"
+            #   Starting character [INT CODE] is 97 as "a"            
             self.abort("Unknown token! \nStarting character [INT CODE] is " +str(ord(self.curChar))  +" as \"" +self.curChar +"\"" )
         
         return token
@@ -417,6 +429,7 @@ class TokenType(enum.Enum):
     CHAR = 110
     INPUT = 111
     WHILE = 112
+    IF = 113
     # LABEL = 101
 	# GOTO = 102
 	# PRINT = 103

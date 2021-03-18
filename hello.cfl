@@ -25,3 +25,15 @@ WHILE (asd < 0) START
    asd = asd + 1
    OUTPUT: "["]asd["] value: [[]" & asd & "], is it greater than 5? " & asd>(-6+1)
 STOP
+
+VAR asd = 1, das = 10 AS INT
+IF (asd == 1) START
+    OUTPUT: "hello"
+    INPUT: asd = 2
+    IF(asd == 2) START
+        OUTPUT: "hi"
+        IF(asd == 2) START
+            OUTPUT: "hi2"
+        STOP
+    STOP
+STOP

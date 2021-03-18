@@ -115,17 +115,20 @@ class Parser:
                         print(self.curToken.text, end="") # PRINT THE STRING
                         self.nextToken()
 
-                    # elif self.checkToken(TokenType.IDENT):
-                    #     value = self.symbol_table.lookup(self.curToken.text).value
-                    #     if value == None: # NONE SYMBOLS WILL BE OUPUTED AS "null"
-                    #         value == "null"
-
-                    #     print(value, end="")
-                    #     self.nextToken()
-
                     else:
                         # Expect an expression.
-                        print(self.expression(), end="")
+                        value = self.expression()
+                        tempToken = self.curToken
+                        if value == None: # NONE SYMBOLS WILL BE OUPUTED AS "null"
+                            if tempToken == TokenType.INT:
+                                value = 0
+                            elif tempToken == TokenType.FLOAT:
+                                value = 0.0
+                            elif tempToken == TokenType.CHAR or tempToken == TokenType.STRING:
+                                value = "\0"
+                            elif tempToken == TokenType.BOOL:
+                                value = "FALSE"
+                        print(value, end="")
 
                     concatDeclared = False # TURN OFF TO REQUIRE THE CONCATANATION
 
@@ -185,10 +188,12 @@ class Parser:
                 self.matchCurrent_Token(TokenType.START) # REQUIRE START KEYWORD
                 self.nextToken() # AFTER THE CALL WE EXPECT STATEMENTS INSIDE THE CFPL LOOP
 
+
                 # LOOP THRU STATEMENTS INSIDE THE CFPL LOOP UNTIL STOP KEYWORD
                 while not self.checkToken(TokenType.STOP):
+                    if self.checkToken(TokenType.EOF):
+                        self.abort("No STOP keyword in WHILE STATEMENT")
                     self.nl() # HELPS US LOOP THRU NEWLINES
-
                     self.statement() # EXECUTE THE STATEMENT IN THE LINE 
                 
                 # USE THE RESTORE-POINT/CHECKPOINT FOR LEXER
@@ -224,7 +229,29 @@ class Parser:
             self.debugPrint("COMMENT STATEMENT")
             while not self.checkToken(TokenType.NEWLINE):
                 self.nextToken()
+        
+        elif self.checkToken(TokenType.IF):
+            self.debugPrint("IF-STATEMENT")
+            self.nextToken()
+            self.matchCurrent_Token(TokenType.PARAN_OPEN) # EXPECT A OPENING PARENTHESIS
+            self.nextToken() # AFTER THIS CALL, WE SHOULD EXPECT AN BOOLEAN EXPRESSION FOR THE IF STATEMENT
+            if self.expression():
+                self.matchCurrent_Token(TokenType.PARAN_CLOSE) # REQUIRE CLSING PARENTHESIS
+                self.nextToken() # AFTER THE CALL WE EXPECT NEWLINES
+                
+                self.nl() # HELPS US LOOP THRU NEWLINES
 
+                
+                self.matchCurrent_Token(TokenType.START) # REQUIRE START KEYWORD
+                self.nextToken() # AFTER THE CALL WE EXPECT STATEMENTS INSIDE THE CFPL IF STATEMENT
+
+                # LOOP THRU STATEMENTS INSIDE THE CFPL IF STATEMENT UNTIL STOP KEYWORD
+                while not self.checkToken(TokenType.STOP):
+                    if self.checkToken(TokenType.EOF):
+                        self.abort("No STOP keyword in IF STATEMENT")
+                    self.nl() # HELPS US LOOP THRU NEWLINES
+                    self.statement() # EXECUTE THE STATEMENT IN THE LINE 
+            self.nextToken()
        # This is not a valid statement. Error!
         else:
             self.abort("Invalid statement at " + self.curToken.text + " (" + self.curToken.kind.name + ")")
@@ -260,7 +287,7 @@ class Parser:
 
         reassignedValue = self.expression() # self.expression() ALREADY CALLS self.nextToken(), SO NO NEED TO CALL FOR THIS FUNCTION
 
-        self.matchCurrent_Token(TokenType.NEWLINE)
+        #self.matchCurrent_Token(TokenType.NEWLINE)
         
         return reassignedValue
             # self.symbol_table.update(self.curToken.text, self.expression()) 
@@ -290,7 +317,7 @@ class Parser:
                 self.abort("No variable assigned!")
 
         if self.checkToken(TokenType.EQUAL):
-            print(self.curToken.text)
+            #print(self.curToken.text)
             self.nextToken()
             
             if self.checkToken(TokenType.LITERAL_CHAR):
@@ -308,7 +335,7 @@ class Parser:
                 self.nextToken()
 
             elif self.checkToken(TokenType.IDENT):
-                print(self.curToken.text)
+                #print(self.curToken.text)
                 if type(self.symbol_table.lookup(self.curToken.text).value) == str:
                     self.symbo_value = self.curToken.text
                     self.symbol_table.update(self.symbo_name, self.symbo_value)
@@ -316,10 +343,10 @@ class Parser:
                 else:
                     #print("hello")
                     self.symbo_value = self.expression()
-                    print(self.symbo_value)
+                    #print(self.symbo_value)
                     self.symbol_table.update(self.symbo_name, self.symbo_value)    
             else:
-                print(self.curToken.text)
+                #print(self.curToken.text)
                 self.symbo_value = self.expression()
                 #print(self.symbo_name)
                 #print(self.symbo_value)
@@ -550,7 +577,11 @@ class Parser:
                 if type(left) == str or type(right) == str:
                     self.abort("A CHAR/STRING isn't supposed to be used for arithmethic or relational operation")
                 elif type(left) == bool or type(right) == bool:
-                    self.abort("A BOOLEAN isn't supposed to be used for arithmethic or relational operation")
+                    print(operatorToken.kind)
+                    if operatorToken.kind == TokenType.EEQUAL:
+                        left = left == right 
+                    else:
+                        self.abort("A BOOLEAN isn't supposed to be used for arithmethic or relational operation")
 
                 # WE EXECUTE OPERATION BASED ON THE PREVIOUS TOKEN WE ASSUMED TO BE AN OPERATOR
                 # ARITHMETHIC
@@ -593,7 +624,7 @@ class Parser:
         #     left = self.unary()
 
         # Can have 0 or more *// and expressions.
-        while self.checkToken(TokenType.ASTERISK) or self.checkToken(TokenType.SLASH):
+        while self.checkToken(TokenType.ASTERISK) or self.checkToken(TokenType.SLASH) or self.checkToken(TokenType.MOD):
             operatorToken = self.curToken # WE EXPECT self.curToken TO BE A LOGICAL OPERATOR 
             self.nextToken()
 
@@ -609,7 +640,8 @@ class Parser:
                 left *= right
             elif operatorToken.kind == TokenType.SLASH:
                 left /= right
-
+            elif operatorToken.kind == TokenType.MOD:
+                left %= right
         return left
 
     # unary ::= ("+" | "-") (<numrical_primary>|<expression>)) | ("NOT") (<boolean_primary>|<expression>)) 
@@ -674,9 +706,9 @@ class Parser:
         elif self.checkToken(TokenType.FALSE): # IF CURRENT TOKEN IS A KEYWORD "FALSE"
             value = False
 
-        else:
+        elif self.curToken.text != '=':
             # Error!
-            self.abort("Unexpected " +self.curToken.text +"token, expecting numerical or logical value")
+            self.abort("Unexpected " +self.curToken.text +" token, expecting numerical or logical value")
 
         
         self.debugPrint("PRIMARY (" +str(value) +")")

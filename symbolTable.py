@@ -54,17 +54,24 @@ class Symbol:
         return self._dataType
 
     def setDataType(self, symboType):
+        #print(self.value, symboType)
         if self._value != None:
-            if  symboType != TokenType.STRING and type(self._value) == str and len(self._value) != 1:
-                self.abort("Value \"" +str(self.value) +"\" is not STRING")
-            elif  symboType != TokenType.CHAR and type(self._value) == str and len(self._value) == 1:
-                self.abort("Value \"" +str(self.value) +"\" is not CHAR")
-            elif symboType != TokenType.INT and type(self._value) == int:
-                self.abort("Value \"" +str(self.value) +"\" is not INT")
-            elif symboType != TokenType.FLOAT and type(self._value) == float:
-                self.abort("Value \"" +str(self.value) +"\" is not FLOAT")
-            elif symboType != TokenType.BOOL and type(self._value) == bool:
-                self.abort("Value \"" +str(self.value) +"\" is not BOOL")
+            if symboType == TokenType.STRING and type(self.value) != str:
+                self.abort("Value assigned must be a STRING")
+            elif symboType == TokenType.CHAR and type(self.value) != str:
+                self.abort("Value assigned must be a CHAR")
+            elif symboType == TokenType.INT and type(self.value) != int:
+                if type(self.value) == float:
+                    self.value = int(self.value)
+                else:
+                    self.abort("Value assigned must be a INT")
+            elif symboType == TokenType.FLOAT and type(self.value) != float:
+                if type(self.value) == int:
+                    self.value = float(self.value)
+                else:
+                    self.abort("Value assigned must be a FLOAT")
+            elif symboType == TokenType.BOOL and type(self.value) != bool:
+                self.abort("Value assigned must be a BOOL")
                 
         self._dataType = symboType
 
@@ -76,16 +83,16 @@ class Symbol:
         
     def setValue(self, val):
         if self._dataType != None:
-            if type(val) == str and len(val) != 1  and self.dataType != TokenType.STRING:
-                self.abort("Assigned value must be a STRING")
-            if type(val) == str and len(val) == 1  and self.dataType != TokenType.CHAR:
-                self.abort("Assigned value must be a CHAR")
+            if type(val) == str and len(val) == 1  and self.dataType != TokenType.CHAR and len(val) != 1:
+                self.abort("Assigned value must be a "+ str(self.dataType)[10:])
+            elif type(val) == str and len(val) != 1  and self.dataType != TokenType.STRING:
+                self.abort("Assigned value must be a "+ str(self.dataType)[10:])
             elif type(val) == int and self.dataType != TokenType.INT:
-                self.abort("Assigned value must be a INT")
+                self.abort("Assigned value must be a " + str(self.dataType)[10:])
             elif type(val) == float and self.dataType != TokenType.FLOAT:
-                self.abort("Assigned value must be a FLOAT")
+                self.abort("Assigned value must be a " + str(self.dataType)[10:])
             elif type(val) == bool and self.dataType != TokenType.BOOL:
-                self.abort("Assigned value must be a BOOL")
+                self.abort("Assigned value must be a "+ str(self.dataType)[10:])
 
         self._value = val
 
