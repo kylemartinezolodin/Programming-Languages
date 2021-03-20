@@ -37,16 +37,12 @@ class Lexer:
     def skipWhitespace(self):
         while self.curChar == ' ' or self.curChar == '\t' or self.curChar == '\r':
             self.nextChar()
-		
-    # Skip comments in the code.
-    def skipComment(self):
-        pass
 
     # Skip comments in the code.
     def skipComment(self):
-        while self.curChar != '\n':
+        while self.curChar != '\n': # LOOP UNTIL NEWLINE CHARACTER
             self.nextChar()
-    
+            
     def peekToken(self):
         # SAVE CURRENT VALUES OF EACH PROPERTIES
         revertChar = self.curChar
@@ -147,7 +143,7 @@ class Lexer:
 
                 self.nextChar()
 
-            if self.curChar == '\n': # ERROR SINCE WE STOPPED AT NEWLINE INSTEAD OF A UNESCAPED DOUBLE APPOSTROPHE
+            if self.curChar != '\"': # ERROR SINCE WE STOPPED AT NEWLINE INSTEAD OF A UNESCAPED DOUBLE APPOSTROPHE
                 self.abort("Expecting closing double appostrophe [\"] ")
 
 
@@ -159,6 +155,9 @@ class Lexer:
             tokText = self.source[self.curPos: self.curPos + 3] # Get the substring.
             self.nextChar() # AFTER THE CALL WE EXPECT A CHARACTER 
             self.nextChar() # AFTER THE CALL WE EXPECT SINGLE APOSTROPHE
+            
+            if self.curChar != '\'': # ERROR SINCE WE STOPPED AT NEWLINE INSTEAD OF A UNESCAPED DOUBLE APPOSTROPHE
+                self.abort("Expecting closing single appostrophe [\'] ")
             
             token = self.tokenize(tokText)
 
@@ -280,10 +279,12 @@ class Lexer:
             
         # BOOLEAN HANDLER
             if text == "\"TRUE\"":
-                token = Token("1", TokenType.TRUE)
+                token = Token(True, TokenType.TRUE)
+                # token = Token("1", TokenType.TRUE)
             elif text == "\"FALSE\"":
                 self.nextChar()
-                token = Token("0", TokenType.FALSE)
+                token = Token(False, TokenType.FALSE)
+                # token = Token("0", TokenType.FALSE)
 
         # STRING/CHARACTER ESCAPE HANDLER
             else:
@@ -295,11 +296,26 @@ class Lexer:
                     if text[i] == '#':
                         # PYTHON TERNARY OPERATOR SYNTAX: someVar = [on_true] if [expression] else [on_false] 
                         leftNeigbhorChar = "" if i-1 < 0 else text[i-1]
-                        rightNeigbhorChar = "" if i+1 < len(text) else text[i+1] 
+                        rightNeigbhorChar = "" if i+1 >= len(text) else text[i+1] 
 
                         if leftNeigbhorChar != "[" and rightNeigbhorChar != "]":
                             text = text.replace(leftNeigbhorChar +"#" +rightNeigbhorChar, leftNeigbhorChar +"\n" +rightNeigbhorChar, 1)
-                            
+                    
+                    # ERROR HANDLING FOR ESCAPING CHARACTERS
+                    elif text[i] == '[' or text[i] == ']':
+                        leftNeigbhorChar = "" if i-1 < 0 else text[i-1]
+                        rightNeigbhorChar = "" if i+1 >= len(text) else text[i+1] 
+                        
+                        if leftNeigbhorChar != "[" or rightNeigbhorChar != "]": # IF THE BRACKET IS NOT ESCAPED
+                            if text[i] == '[':
+                                checkClosingBrackets = "" if i+2 >= len(text) else text[i+2] 
+                                if checkClosingBrackets != "]":
+                                    self.abort("Expecting closing brackets, but got: " +checkClosingBrackets)
+
+                            elif text[i] == ']':
+                                checkOpeningBrackets = "" if i-2 < 0 else text[i-2]
+                                if checkOpeningBrackets != "[":
+                                    self.abort("Missing opening brackets")
                     i+=1 #INCREMENT, THER IS NO ++/-- IN PYTHON
             
             # CHARACTER ESCAPE PROCESSING
@@ -308,7 +324,7 @@ class Lexer:
                 text = text.replace("[]]", "]") # CLOSING BRACKET ESCAPE
                 text = text.replace("[\"]", "\"") # DOUBLE APOSTROPHE ESCAPE
 
-                text = text[1:len(text) - 1] # REMOVE THE DOUBLE APOSTROPHE
+                # text = text[1:len(text) - 1] # REMOVE THE DOUBLE APOSTROPHE
                 token = Token(text, TokenType.STRING)
                 # Error!
                 # self.abort("Boolean value must be true or false only.")
@@ -316,13 +332,10 @@ class Lexer:
     # CHARACTER INPUT HANDLER
         elif text[0] == '\'':
             
-            if len(text) >= 3: # Error!
-                if text[2] != '\'': # Error!
-                    token = Token(text, None) # UNRECOGNIZED TOKEN
-                else:
-                    token = Token(text[1], TokenType.LITERAL_CHAR) # DO NOT INCLUDE SINGLE QOUTATION MARKS
+            if len(text) > 3 or text[2] != '\'': # Error!
+                token = Token(text, None) # UNRECOGNIZED TOKEN
             else: 
-                token = Token(text[1], TokenType.LITERAL_CHAR) # DO NOT INCLUDE SINGLE QOUTATION MARKS
+                token = Token(text, TokenType.LITERAL_CHAR) # DO NOT INCLUDE SINGLE QOUTATION MARKS
 
     # OUTPUT(PRINT) CONCATENATION
         elif text == '&':
@@ -356,9 +369,8 @@ class Lexer:
 
     # IDENTIFIER/KEYWORD/LOGICAL HANDLER
         elif text[0].isalpha(): # IF IT IS ALPHANUMERIC
-
-            # SPECIAL KEYWORDS
-            if text.count(":"):
+            # SPECIAL KEYWORDS PROCESSING
+            if text.rfind("OUTPUT") == 0 or text.rfind("INPUT") == 0:
                 if text == "OUTPUT:":
                     token = Token(text, TokenType.OUTPUT)
                 elif text == "INPUT:":
@@ -369,8 +381,9 @@ class Lexer:
             else:
                 keyword = Token.checkIfKeyword(text)
                 if keyword == None: # IF IT IS NOT RECOGNIZED AS KEYWORD THEN IT COULD BE AN IDENTIFIER
-                    if Token.checkIfKeyword(text.upper()):
-                        self.abort(text + " must be capitalized!")
+                    if Token.checkIfKeyword(text.upper()): # CHECKS IF IT ONLY NEEDS TO BE UPPERCASED
+                        token = Token(text, None)
+                        # self.abort(text + " must be capitalized!")
                     else:
                         token = Token(text, TokenType.IDENT)
 
@@ -415,31 +428,25 @@ class TokenType(enum.Enum):
     TRUE = 7
     FALSE = 8
 
-
+    # SPECIAL KEYWORDS
+    OUTPUT = 98
+    INPUT = 99
 	# Keywords.
     START = 101
     STOP = 102
     INT = 103
-    PRINT = 104
-    VAR = 105
-    AS = 106
-    OUTPUT = 107
-    FLOAT = 108
-    BOOL = 109
-    CHAR = 110
-    INPUT = 111
+    VAR = 104
+    AS = 105
+    FLOAT = 106
+    BOOL = 107
+    CHAR = 108
+    IF = 109
+    ELSE = 110
+    ELIF = 111
     WHILE = 112
-    IF = 113
     # LABEL = 101
 	# GOTO = 102
-	# PRINT = 103
-	# INPUT = 104
-	# LET = 105
-	# IF = 106
-	# THEN = 107
-	# ENDIF = 108
 	# REPEAT = 110
-	# ENDWHILE = 111
 
 	# Operators.
     NOT = 197 # RECOGNIZE AS KEYWORD ALSO
