@@ -1,14 +1,75 @@
-* TEST CHAR VAR STATEMENT
-VAR kng = 'K' AS CHAR
-OUTPUT: kng
+* TEST NESTED WHILE WITH IF STATEMENT
+VAR nestedWhile1 = 1, nestedWhile2 = 1 AS INT
+WHILE (nestedWhile1 <> 5) START
+    nestedWhile2 = 1
+    WHILE (nestedWhile2 <= 2) START
+        IF(nestedWhile1 % 3 == 0) START
+            OUTPUT: nestedWhile1 & "." & nestedWhile2 & " Leading Number is divisible by 3!"
+        STOP
+        ELIF(nestedWhile1 % 2 == 0) START
+            OUTPUT: nestedWhile1 & "." & nestedWhile2 & " Leading Number is Even!"
+        STOP
+        ELSE START
+            OUTPUT: nestedWhile1 & "." & nestedWhile2 & " Leading Number is Odd!"
+        STOP
+        nestedWhile2 = nestedWhile2 + 1
+    STOP
+    nestedWhile1 = nestedWhile1 + 1
+STOP
 
-* TEST CHAR VAR STATEMENT
-VAR kew = 'S'*4 AS CHAR
-OUTPUT: kng
+* TEST WHILE WITH IF STATEMENT
+VAR whileWithIfs = 5 AS INT
+WHILE (whileWithIfs > 0) START
+    IF(whileWithIfs % 2 == 0) START
+        OUTPUT: whileWithIfs & " is Even!"
+    STOP
+    ELSE
+    START
+        OUTPUT: whileWithIfs & " is Odd!"
+    STOP
+    whileWithIfs = whileWithIfs - 1
+STOP
+
+* TEST IF STATEMENTS
+VAR ifTestVar1 = 1 AS INT
+IF (ifTestVar1 == 1) START
+    OUTPUT: "hello"
+    INPUT: ifTestVar1 = 2
+    IF(ifTestVar1 == 2) START
+        OUTPUT: "hi"
+        IF(ifTestVar1 == 2) START
+            OUTPUT: "hi2"
+            ifTestVar1 = ifTestVar1+2
+        STOP
+    STOP
+    IF(ifTestVar1 == 4) START
+        OUTPUT: "hi3"
+        ifTestVar1 = ifTestVar1+2
+    STOP
+    OUTPUT: "ifTestVar1 Value: " & ifTestVar1
+STOP
+
+* TEST CHAR VAR STATEMENT, SHOULD ERROR THAT ITS EXPECTING AN APPOSTROPHE
+*VAR cfplCharWithMoreThanOneChar = 'KA' AS CHAR
+*OUTPUT: someValidAssingment
 
 * PAY ATTENTION TO THE STATEMENT BELLOW AND ITS OUPUT
 VAR msk = NOT "FALSE" OR (6 < 7) AS BOOL
 OUTPUT: "NOT ["]FALSE["] OR (6 < 7): " & msk 
+
+* TEST CHAR VAR STATEMENT, SHOULD ERROR THAT THE VALUE IS NOT CHAR
+*VAR variableAsCharButStringWasUsed = "K" AS CHAR
+*OUTPUT: variableAsCharButStringWasUsed
+
+
+* TEST CHAR VAR STATEMENT, SHOULD RUN WITHOUT ERROR
+VAR someValidAssingment = 'K' AS CHAR
+OUTPUT: someValidAssingment
+
+* TEST CHAR VAR STATEMENT, THIS SHOULD RESULT IN ERROR FOR USING NUMERICAL OPERATOR WITH CHAR
+*VAR charUsedWithNumericalOperation = 'S'*4 AS CHAR
+*OUTPUT: charUsedWithNumericalOperation
+
 
 *COMPARE THIS STATEMENT AND ITS OUTPUT TO THE STATMENT EARLIER
 msk = NOT ("FALSE" OR (6 < 7))
@@ -23,5 +84,5 @@ OUTPUT: das & " AMAWA " & ming
 WHILE (asd < 0) START
    *OUTPUT: "meow[#] " & asd & "# food"
    asd = asd + 1
-   OUTPUT: "["]asd["] value: [[]" & asd & "], is it greater than 5? " & asd>(-6+1)
+   OUTPUT: "["]asd["] value: [[]" & asd & "[]], is it greater than -5? " & asd>(-6+1)
 STOP

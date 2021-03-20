@@ -55,15 +55,18 @@ class Symbol:
 
     def setDataType(self, symboType):
         if self._value != None:
-            if  symboType != TokenType.STRING and type(self._value) == str and len(self._value) != 1:
-                self.abort("Value \"" +str(self.value) +"\" is not STRING")
-            elif  symboType != TokenType.CHAR and type(self._value) == str and len(self._value) == 1:
-                self.abort("Value \"" +str(self.value) +"\" is not CHAR")
-            elif symboType != TokenType.INT and type(self._value) == int:
+            # CHECK IF ITS IS NOT A STRING, OR DOES NOT HAVE A DOUBLE APPOSTROPHE IN THE START AND AT THE END OF THE STRING
+            if symboType == TokenType.STRING and ( type(self._value) != str or (self._value[0] != "\"" and self._value[-1] != "\"") ):
+                self.abort("Value " +str(self.value) +" is not STRING, STRING values should be enclosed by double-appostrophe [\"]")
+
+            # CHECK IF ITS IS NOT A STRING, OR STRING-LENGHT IS NOT 3, OR DOES NOT HAVE A SINGLE APPOSTROPHE IN THE START AND AT THE END
+            elif symboType == TokenType.CHAR and ( type(self._value) != str or ( len(self._value) != 3 or (self._value[0] != "\'" and self._value[-1] != "\'")) ):
+                self.abort("Value " +str(self.value) +" is not CHAR, CHAR values should only be a single character enclosed by single-appostrophe [\']")
+            elif symboType == TokenType.INT and type(self._value) != int:
                 self.abort("Value \"" +str(self.value) +"\" is not INT")
-            elif symboType != TokenType.FLOAT and type(self._value) == float:
+            elif symboType == TokenType.FLOAT and type(self._value) != float:
                 self.abort("Value \"" +str(self.value) +"\" is not FLOAT")
-            elif symboType != TokenType.BOOL and type(self._value) == bool:
+            elif symboType == TokenType.BOOL and type(self._value) != bool:
                 self.abort("Value \"" +str(self.value) +"\" is not BOOL")
                 
         self._dataType = symboType
@@ -72,14 +75,31 @@ class Symbol:
 
 
     def getValue(self):
-        return self._value
+        ret = None
+        if self._value == None and self._dataType != None:
+            if self.dataType == TokenType.CHAR or self.dataType == TokenType.STRING:
+                ret = "\0"
+            elif self.dataType == TokenType.INT:
+                ret = 0
+            elif self.dataType == TokenType.FLOAT:
+                ret = 0.0
+            elif self.dataType == TokenType.BOOL:
+                ret = False
+            else:
+                self.abort("Unknown dataype")
+        else:
+            ret = self._value
+        return ret
         
     def setValue(self, val):
         if self._dataType != None:
-            if type(val) == str and len(val) != 1  and self.dataType != TokenType.STRING:
-                self.abort("Assigned value must be a STRING")
-            if type(val) == str and len(val) == 1  and self.dataType != TokenType.CHAR:
-                self.abort("Assigned value must be a CHAR")
+            if type(val) == str:
+                if val[0] == "\'" and (self.dataType != TokenType.CHAR or len(val) != 3):
+                    self.abort("Assigned value must be a CHAR")
+                elif val[0] == "\"" and self.dataType != TokenType.STRING:
+                    self.abort("Assigned value must be a STRING")
+                # else:
+                #     self._value = val[1:len(val)-1]
             elif type(val) == int and self.dataType != TokenType.INT:
                 self.abort("Assigned value must be a INT")
             elif type(val) == float and self.dataType != TokenType.FLOAT:
@@ -88,6 +108,15 @@ class Symbol:
                 self.abort("Assigned value must be a BOOL")
 
         self._value = val
+        # if type(val) == str:
+        #     self._value = val[1:len(val)-1] #REMOVES APPOSTROPHES FOR BOTH STRING AND CHAR
+        # else:
+        #     self._value = val
+
+        # elif self._dataType == TokenType.INT:
+        #     self._value = ord(val)
+        # else:
+        #     self._value = val
 
     value = property(getValue, setValue) # property() PYTHON BUILT FUNCTION READ MORE: https://www.geeksforgeeks.org/getter-and-setter-in-python/
         
