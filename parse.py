@@ -17,6 +17,7 @@ class Parser:
         # FOR ABORT PURPOSES
         self.prevLine = None
         self.prevCol = None
+        self.eof()
 
         self.variables = list()    # Variables declared so far.
 
@@ -30,7 +31,10 @@ class Parser:
         self.symbo_type = None
         self.symbo_value = None
 
-        self.debug = False
+        # FOR recursive depth
+        self.depth = 0
+
+        self.debug = True
 
     # USE THIS FOR DEBUGGING PURPOSE PRINTS, THIS IS WILL HELP IMMIDEATELY REMOVING DEBUG PRINTS
     def debugPrint(self, message):
@@ -75,6 +79,9 @@ class Parser:
         self.curLine = self.lexer.curLine
         self.curCol = self.lexer.curCol
 
+    def eof(self):
+        self.curToken = "\0"
+
     def abort(self, message):
         sys.exit("Parsing error @ line " +str(self.prevLine) +", col " +str(self.prevCol) +"\n" + message)
 
@@ -82,12 +89,12 @@ class Parser:
     def program(self):
         self.debugPrint("PROGRAM")
 
-        # Since some newlines are requ,ired in our grammar, need to skip the excess.
+        # Since some newlines are required in our grammar, need to skip the excess.
         while self.checkToken(TokenType.NEWLINE):
             self.nextToken()
 
         # Parse all the statements in the program. Will continue to call statement until there is nothing left.
-        while not self.checkToken(TokenType.EOF):
+        while not self.checkToken(TokenType.EOF) or self.checkToken(TokenType.STOP):
             self.statement()
             
         if self.debug:
@@ -97,6 +104,21 @@ class Parser:
 
     # statement ::= "OUTPUT:" (expression | string) nl
    
+    #startStop: recursively calls self.statement() until it finds a STOP statement
+    def startStop(self):
+            self.depth+=1
+            self.debugPrint("BLOCK-START "+ str(self.depth))
+            self.nextToken()
+            self.nl()
+            while not self.checkToken(TokenType.STOP):
+                self.statement()
+                if self.checkToken(TokenType.EOF):
+                    self.debugPrint("Error: Missing STOP statement")
+                    break
+            if self.checkToken(TokenType.STOP):
+                self.debugPrint("BLOCK-STOP "+str(self.depth))
+            self.nextToken()
+            self.depth-=1
 
     def statement(self):
         # Check the first token to see what kind of statement this is.
@@ -136,8 +158,18 @@ class Parser:
                     else: # ELSE THROW ERROR
                         self.abort("Expecting concatenation [&]")
             print("\n", end="") # AESTHETIC DEBUGGUNG PURPOSES, I DELETE NYA NI 
+        
+        #"START" ident; recursively calls itself until it finds a STOP statement
+        elif self.checkToken(TokenType.START):
+            self.startStop()
+        
+        #If parser detects a STOP statement after recursively calling startStop() is done, that means there are extra STOP statements
+        elif self.checkToken(TokenType.STOP):
+            self.debugPrint("Warning: STOP statement doesn't have a preceding START statement ("+str((self.depth-1)*-1)+")")
+            self.depth -= 1
+            self.nextToken()
 
-                    
+
         # "VAR" ident "=" (number | char | boolean | {expression} | ident) AS (INT | FLOAT | CHAR | BOOL)
         elif self.checkToken(TokenType.VAR):
             self.debugPrint("VAR-STATEMENT")
@@ -148,7 +180,7 @@ class Parser:
 
             self.nextToken()
             self.varstmt1()
-        
+
         elif self.checkToken(TokenType.INPUT):
             self.debugPrint("INPUT-STATEMENT")
             self.symbo_name = ""
@@ -741,7 +773,7 @@ class Parser:
         #a = b = c = d = 5
         
         while not self.checkToken(TokenType.NEWLINE):
-            if self.checkToken(TokenType.PARAN) or self.checkToken(TokenType.INUMBER) or self.checkToken(TokenType.FNUMBER):
+            if self.checkToken(TokenType.PARAN_OPEN) or self.checkToken(TokenType.INUMBER) or self.checkToken(TokenType.FNUMBER):
                 self.symbo_value = self.expression()
                 break
             elif self.checkToken(TokenType.IDENT):
@@ -755,7 +787,7 @@ class Parser:
 
         self.nextToken()
         return self.symbo_value
-    
+
     def booleval(self,exp):
         print("CONDITION")
         value = None

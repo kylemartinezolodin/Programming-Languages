@@ -39,8 +39,8 @@ class Lexer:
             self.nextChar()
 		
     # Skip comments in the code.
-    def skipComment(self):
-        pass
+    #def skipComment(self):
+    #    pass
 
     # Skip comments in the code.
     def skipComment(self):
