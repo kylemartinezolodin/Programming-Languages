@@ -444,10 +444,15 @@ class TokenType(enum.Enum):
     ELSE = 110
     ELIF = 111
     WHILE = 112
+    SWITCH = 113
+    CASE = 114
+    DEFAULT = 115
+    ENDSWITCH = 116
+
     # LABEL = 101
 	# GOTO = 102
 	# REPEAT = 110
-
+    
 	# Operators.
     NOT = 197 # RECOGNIZE AS KEYWORD ALSO
     OR = 198 # RECOGNIZE AS KEYWORD ALSO

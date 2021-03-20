@@ -1,0 +1,12 @@
+VAR iden = 1 AS INT
+
+SWITCH iden
+    CASE 'a'
+        START
+        OUTPUT: "[#]" & iden
+        STOP
+    DEFAULT
+        START
+        OUTPUT: "[#]" & "hi" & "[#]"
+        STOP
+ENDSWITCH

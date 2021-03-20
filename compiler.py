@@ -7,8 +7,8 @@ def main():
 
     # if len(sys.argv) != 2:
     #     sys.exit("File Error: Compiler needs source file as argument.")
-    # with open(sys.argv[1], 'r') as inputFile:
-    with open("program.cfl", 'r') as inputFile: # UNCOMMENT NYA ICOMMENT ANG BABAW VICE VERSA, GAMIT PARA NO NEED HIMOUNG ARGUMENT ANG FILE
+    with open(sys.argv[1], 'r') as inputFile:
+    #with open("program.cfl", 'r') as inputFile: # UNCOMMENT NYA ICOMMENT ANG BABAW VICE VERSA, GAMIT PARA NO NEED HIMOUNG ARGUMENT ANG FILE
         fileName = inputFile.name
         if fileName.endswith(".cfl"):
             input = inputFile.read()
