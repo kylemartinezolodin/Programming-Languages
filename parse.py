@@ -34,7 +34,7 @@ class Parser:
         # FOR recursive depth
         self.depth = 0
 
-        self.debug = False
+        self.debug = True
 
     # USE THIS FOR DEBUGGING PURPOSE PRINTS, THIS IS WILL HELP IMMIDEATELY REMOVING DEBUG PRINTS
     def debugPrint(self, message):
@@ -65,6 +65,11 @@ class Parser:
 
     # Advances the current token.
     def nextToken(self):
+        # PARSER MUST BE BEHIND THE LEXER
+        # self.curToken = self.peekToken
+        # self.curLine = self.lexLine 
+        # self.curCol = self.lexCol
+
         # FOR ABORT PURPOSES
         self.prevLine = self.curLine
         self.prevCol = self.curCol
@@ -93,9 +98,9 @@ class Parser:
             self.statement()
             
         if self.debug:
-            print("PARSER: DEBUG PROPERTY IS SET TO TRUE, SET TO FALSE TO DISABLE UNESSACARY PRINTS")
+            print("PARSER: DEBUG PROPERTY IS SET TO TRUE, TURN TO FALSE TO DISABLE UNESSACARY PRINTS")
         else:
-           print("PARSER: DEBUG PROPERTY IS SET TO FALSE, SET TO TRUE TO PRINT DEBUG OUTPUT MARKERS") 
+           print("PARSER: DEBUG PROPERTY IS SET TO FALSE, TURN TO TRUE TO PRINTS DEBUG OUTPUT MARKERS") 
 
     # statement ::= "OUTPUT:" (expression | string) nl
    
@@ -129,8 +134,16 @@ class Parser:
                 if concatDeclared:
                     if self.checkToken(TokenType.STRING):
                         # Simple string.
-                        print(self.curToken.text[1:-1], end="") # REMOVE THE FIRST AND LAST DOUBLE APPOSTHROPHES
+                        print(self.curToken.text, end="") # PRINT THE STRING
                         self.nextToken()
+
+                    # elif self.checkToken(TokenType.IDENT):
+                    #     value = self.symbol_table.lookup(self.curToken.text).value
+                    #     if value == None: # NONE SYMBOLS WILL BE OUPUTED AS "null"
+                    #         value == "null"
+
+                    #     print(value, end="")
+                    #     self.nextToken()
 
                     else:
                         # Expect an expression.
@@ -175,15 +188,18 @@ class Parser:
 
         # "VAR" ident "=" (number | char | boolean | {expression} | ident) AS (INT | FLOAT | CHAR | BOOL)
         elif self.checkToken(TokenType.VAR):
-            self.debugPrint("VAR-STATEMENT")
-            self.symbo_name = ""
-            self.symbo_type = None
-            self.symbo_value = None
-            # self.varstmt()
+            if(self.depth == 0):
+                self.debugPrint("VAR-STATEMENT")
+                self.symbo_name = ""
+                self.symbo_type = None
+                self.symbo_value = None
+                # self.varstmt()
 
-            self.nextToken()
-            self.varstmt1()
-
+                self.nextToken()
+                self.varstmt1()
+            else:
+                self.abort("Error: VAR declaration must be outside START/STOP")
+                
         elif self.checkToken(TokenType.INPUT):
             self.debugPrint("INPUT-STATEMENT")
             self.symbo_name = ""
@@ -193,59 +209,59 @@ class Parser:
         
         elif self.checkToken(TokenType.SWITCH):
             self.nextToken()
-            # try: 
-            expressionValue = self.expression()
-            self.nl() # ACCEPT NEWLINES
-            def converter(token,expressionValue): # CONVERT CURRENT TOKEN ACCORDING TO expressionValue'S DATA TYPE
-                try:
-                    return type(expressionValue)(token)
-                except:
-                    return token
+            try: 
+                expressionValue = self.expression()
+                self.nl() # ACCEPT NEWLINES
+                def converter(token,expressionValue): # CONVERT CURRENT TOKEN ACCORDING TO expressionValue'S DATA TYPE
+                    try:
+                        return type(expressionValue)(token)
+                    except:
+                        return token
 
-            flag = False
-            while not flag:
-                if self.checkToken(TokenType.CASE):
-                    self.nextToken()
-                    if self.checkToken(TokenType.IDENT):
-                        if self.symbol_table.doesNotExist(self.curToken.text):
-                            self.abort(f"invalid switch statement at line {self.curLine}, column {self.curCol}")
+                flag = False
+                while not flag:
+                    if self.checkToken(TokenType.CASE):
+                        self.nextToken()
+                        if self.checkToken(TokenType.IDENT):
+                            if self.symbol_table.doesNotExist(self.curToken.text):
+                                self.abort(f"invalid switch statement at line {self.curLine}, column {self.curCol}")
+                            else:
+                                caseValue = self.symbol_table.lookup(self.curToken.text).value
                         else:
-                            caseValue = self.symbol_table.lookup(self.curToken.text).value
+                            caseValue = converter(self.curToken.text,expressionValue)
+
+                        if caseValue == expressionValue:
+                            flag = True
+                        else:
+                            while not self.checkToken(TokenType.CASE) and not self.checkToken(TokenType.DEFAULT):
+                                self.nextToken()
+                                if self.checkToken(TokenType.EOF):
+                                    self.abort("invalid switch statement")
+                                if self.checkToken(TokenType.DEFAULT):
+                                    flag = True
+
+                    elif self.checkToken(TokenType.DEFAULT):
+                            flag = True
+
                     else:
-                        caseValue = converter(self.curToken.text,expressionValue)
+                        self.abort(f"invalid switch statement at line {self.curLine}, column {self.curCol} {self.curToken.text}211")
+                    
+                    if not self.checkToken(TokenType.CASE):
+                        self.nextToken()
 
-                    if caseValue == expressionValue:
-                        flag = True
-                    else:
-                        while not self.checkToken(TokenType.CASE) and not self.checkToken(TokenType.DEFAULT):
-                            self.nextToken()
-                            if self.checkToken(TokenType.EOF):
-                                self.abort("invalid switch statement")
-                            if self.checkToken(TokenType.DEFAULT):
-                                flag = True
+                    if self.checkToken(TokenType.EOF):
+                        self.abort("invalid switch statement")
 
-                elif self.checkToken(TokenType.DEFAULT):
-                        flag = True
-
-                else:
-                    self.abort(f"invalid switch statement at line {self.curLine}, column {self.curCol} {self.curToken.text}211")
-                
-                if not self.checkToken(TokenType.CASE):
-                    self.nextToken()
-
-                if self.checkToken(TokenType.EOF):
-                    self.abort("invalid switch statement")
-
-            self.nextToken()
-            if self.checkToken(TokenType.START):
-                self.startStop()
-                while not self.checkToken(TokenType.ENDSWITCH):
-                    self.nextToken()
                 self.nextToken()
-            else:
-                self.abort(f"invalid switch statement at line {self.curLine}, column {self.curCol} 244")
-            # except:
-            #     self.abort(f"invalid switch statement at line {self.curLine}, column {self.curCol} 255")
+                if self.checkToken(TokenType.START):
+                    self.startStop()
+                    while not self.checkToken(TokenType.ENDSWITCH):
+                        self.nextToken()
+                    self.nextToken()
+                else:
+                    self.abort(f"invalid switch statement at line {self.curLine}, column {self.curCol} 244")
+            except:
+                self.abort(f"invalid switch statement at line {self.curLine}, column {self.curCol} 255")
             
 
         
@@ -268,8 +284,7 @@ class Parser:
             tempParsercurToken = self.curToken
 
             # LOOP THRU THE WHOLE STATEMENT INSIDE CFPL WHILE, UNTIL THE "STOP" HAS BEEN READ, WHILE LOOP IS WIERDLY WRITTEN BECAUSE WE NEED IT NEED TO READ THE CLOSING PARENTHESIS BEFORE BREAK(A MAKESHIFT DO WHILE), FIX THIS
-            while True:
-                whileExpression = self.expression()
+            while self.expression():
                 self.matchCurrent_Token(TokenType.PARAN_CLOSE) # REQUIRE CLSING PARENTHESIS
                 self.nextToken() # AFTER THE CALL WE EXPECT NEWLINES
                 
@@ -279,39 +294,27 @@ class Parser:
                 self.matchCurrent_Token(TokenType.START) # REQUIRE START KEYWORD
                 self.nextToken() # AFTER THE CALL WE EXPECT STATEMENTS INSIDE THE CFPL LOOP
 
-                if whileExpression == True:
-                    # LOOP THRU STATEMENTS INSIDE THE CFPL LOOP UNTIL STOP KEYWORD
-                    while not self.checkToken(TokenType.STOP):
-                        self.nl() # HELPS US LOOP THRU NEWLINES
-                        if self.checkToken(TokenType.EOF):
-                            self.abort("No STOP keyword in WHILE STATEMENT")
-                        self.statement() # EXECUTE THE STATEMENT IN THE LINE 
-                    
-                    # USE THE RESTORE-POINT/CHECKPOINT FOR LEXER
-                    self.lexer.curChar = self.lexer.source[tempStartRepiPosMarker]
-                    self.lexer.curPos = tempStartRepiPosMarker
-                    self.lexer.curCol = tempStartRepiColMarker
-                    self.lexer.curLine = tempStartRepiLineMarker
+                # LOOP THRU STATEMENTS INSIDE THE CFPL LOOP UNTIL STOP KEYWORD
+                while not self.checkToken(TokenType.STOP):
+                    self.nl() # HELPS US LOOP THRU NEWLINES
 
-                    self.curToken = tempParsercurToken
+                    self.statement() # EXECUTE THE STATEMENT IN THE LINE 
+                
+                # USE THE RESTORE-POINT/CHECKPOINT FOR LEXER
+                self.lexer.curChar = self.lexer.source[tempStartRepiPosMarker]
+                self.lexer.curPos = tempStartRepiPosMarker
+                self.lexer.curCol = tempStartRepiColMarker
+                self.lexer.curLine = tempStartRepiLineMarker
 
-                    self.debugPrint("REPEAT")
+                self.curToken = tempParsercurToken
 
-                else: # IF BOOLEANN EXPRESSION IN CFPLE IS FALSE
-                    # AFTER THE WHILE-LOOP ABOVE, WE ARE ASSUMING THE LEXER TO BE POINTING AT THE CONDITION FOR THE CFPL WHILE-LOOP
-                    startStopStack = ["START"]
-                    while len(startStopStack) != 0:
-                        if self.checkToken(TokenType.START): # PUSH "START" KEYWORD
-                            startStopStack.append("START")
-                        elif self.checkToken(TokenType.STOP): # POP "START" KEYWORD
-                            startStopStack.remove("START")
-                        elif self.checkToken(TokenType.EOF):
-                            self.abort("No STOP keyword in WHILE STATEMENT")
-                        
-                        self.nextToken()
-                    self.nextToken() # AFTER THE WHILE-LOOP ABOVE, WE ARE ASSUMING THE LEXER TO BE POINTING AT THE "STOP" KEYWORD FOR THE CFPL WHILE-LOOP, THUS WE SHOULD CALL self.nextToken() 
-                    
-                    break # EXIT THE INFINITE LOOP
+                # USE THE RESTORE-POINT/CHECKPOINT FOR PARSER
+                self.debugPrint("REPEAT")
+            
+            # AFTER THE WHILE-LOOP ABOVE, WE ARE ASSUMING THE LEXER TO BE POINTING AT THE CONDITION FOR THE CFPL WHILE-LOOP
+            while not self.checkToken(TokenType.STOP):
+                self.nextToken()
+            self.nextToken() # AFTER THE WHILE-LOOP ABOVE, WE ARE ASSUMING THE LEXER TO BE POINTING AT THE "STOP" KEYWORD FOR THE CFPL WHILE-LOOP, THUS WE SHOULD CALL self.nextToken() 
 
         elif self.checkToken(TokenType.IDENT):
             self.debugPrint("REASSIGNMENT-STATEMENT")
@@ -328,121 +331,26 @@ class Parser:
 
         elif self.checkToken(TokenType.ASTERISK):
             self.debugPrint("COMMENT STATEMENT")
-            self.lexer.skipComment() # SKIPS CHARACTERS UNTIL NEWLINE CHARACTER
-            # AFTER THE self.lexer.skipComment() WE EXPECT THE LEXER POINTING A NEWLINE CHARACTER 
-            self.nextToken() # CURRENTLY self.curToken IS STILL TokenType.ASTERISK, CALLING self.nextToken() WILL UPDATE self.curToken
-            
-            # while not self.checkToken(TokenType.NEWLINE):
-            #     self.nextToken()
-
-        elif self.checkToken(TokenType.IF) or self.checkToken(TokenType.ELIF) or self.checkToken(TokenType.ELSE):
-            # HELPER FUNCTION TO SKIP FUNCTION UNTIL NEWLINE
-            def skipStatement():
-                while not self.checkToken(TokenType.NEWLINE):
-                    self.nextToken()
-                self.nl()
-
-            hasIfStatement = False # FLAGS IF IT HAS READ A IF STATEMENT
-            hasAlreadySelectedCondition = False # FLAGS IF A CONDITION HAS ALREADY ACCEPTED, THIS WILL HELP IGNORE THE REMAINING CONDITION
-            if self.checkToken(TokenType.IF):
-                self.debugPrint("IF-STATEMENT")
+            while not self.checkToken(TokenType.NEWLINE):
                 self.nextToken()
 
-                hasIfStatement = True
-
-                self.matchCurrent_Token(TokenType.PARAN_OPEN) # EXPECT A OPENING PARENTHESIS
-                self.nextToken() # AFTER THIS CALL, WE SHOULD EXPECT AN BOOLEAN EXPRESSION FOR THE IF STATEMENT
-                boolExpression = self.expression()
-                self.matchCurrent_Token(TokenType.PARAN_CLOSE) # REQUIRE CLSING PARENTHESIS
-                self.nextToken() # AFTER THE CALL WE EXPECT NEWLINES
-                
-                self.nl() # HELPS US LOOP THRU NEWLINES
-
-                self.matchCurrent_Token(TokenType.START) # REQUIRE START KEYWORD
-                self.nextToken() # AFTER THE CALL WE EXPECT STATEMENTS INSIDE THE CFPL IF STATEMENT
-            
-                # LOOP THRU STATEMENTS INSIDE THE CFPL IF STATEMENT UNTIL STOP KEYWORD
-                while not self.checkToken(TokenType.STOP):
-                    self.nl() # HELPS US LOOP THRU NEWLINES
-                    if self.checkToken(TokenType.EOF):
-                        self.abort("No STOP keyword in IF STATEMENT")
-
-                    if boolExpression == True:    
-                        self.statement() # EXECUTE THE STATEMENT IN THE LINE
-                    else:
-                        skipStatement() # IGNORE STATEMENT UNTIL NEWLINE
-                if boolExpression == True:    
-                    hasAlreadySelectedCondition = True 
-                self.nextToken() # AFTER THE CALL WE EXPECT NEWLINES
-
-                self.nl() # HELPS US LOOP THRU NEWLINES
-
-            while self.checkToken(TokenType.ELIF):
-                if not hasIfStatement:
-                    self.abort("ELIF should only come after IF statement")
-                self.debugPrint("ELIF-STATEMENT")
-                self.nextToken()
-
-                self.matchCurrent_Token(TokenType.PARAN_OPEN) # EXPECT A OPENING PARENTHESIS
-                self.nextToken() # AFTER THIS CALL, WE SHOULD EXPECT AN BOOLEAN EXPRESSION FOR THE IF STATEMENT
-                boolExpression = self.expression()
-                self.matchCurrent_Token(TokenType.PARAN_CLOSE) # REQUIRE CLSING PARENTHESIS
-                self.nextToken() # AFTER THE CALL WE EXPECT NEWLINES
-                
-                self.nl() # HELPS US LOOP THRU NEWLINES
-
-                self.matchCurrent_Token(TokenType.START) # REQUIRE START KEYWORD
-                self.nextToken() # AFTER THE CALL WE EXPECT STATEMENTS INSIDE THE CFPL IF STATEMENT
-
-                
-                # LOOP THRU STATEMENTS INSIDE THE CFPL IF STATEMENT UNTIL STOP KEYWORD
-                while not self.checkToken(TokenType.STOP):
-                    self.nl() # HELPS US LOOP THRU NEWLINES
-                    if self.checkToken(TokenType.EOF):
-                        self.abort("No STOP keyword in IF STATEMENT")
-
-                    if boolExpression == True and hasAlreadySelectedCondition == False:    
-                        self.statement() # EXECUTE THE STATEMENT IN THE LINE
-                    else:
-                        skipStatement() # IGNORE STATEMENT UNTIL NEWLINE
-
-                if boolExpression == True and hasAlreadySelectedCondition == False:    
-                    hasAlreadySelectedCondition = True 
-                self.nextToken() # AFTER THE CALL WE EXPECT NEWLINES
-
-                self.nl() # HELPS US LOOP THRU NEWLINES
-
-            if self.checkToken(TokenType.ELSE):
-                if not hasIfStatement:
-                    self.abort("ELSE should only come after IF statement or ELIF statement")
-                self.debugPrint("ELSE-STATEMENT")
-                self.nextToken()
-
-                self.nl() # HELPS US LOOP THRU NEWLINES
-
-                self.matchCurrent_Token(TokenType.START) # REQUIRE START KEYWORD
-                self.nextToken() # AFTER THE CALL WE EXPECT STATEMENTS INSIDE THE CFPL IF STATEMENT
-                
-                # LOOP THRU STATEMENTS INSIDE THE CFPL IF STATEMENT UNTIL STOP KEYWORD
-                while not self.checkToken(TokenType.STOP):
-                    self.nl() # HELPS US LOOP THRU NEWLINES
-                    if self.checkToken(TokenType.EOF):
-                        self.abort("No STOP keyword in IF STATEMENT")
-
-                    if hasAlreadySelectedCondition == False:    
-                        self.statement() # EXECUTE THE STATEMENT IN THE LINE
-                    else:
-                        skipStatement() # IGNORE STATEMENT UNTIL NEWLINE
-                self.nextToken()
-            
        # This is not a valid statement. Error!
         else:
-            self.abort("Invalid statement at " + self.curToken.text + " tokenType=" + self.curToken.kind.name)
+            self.abort("Invalid statement at " + self.curToken.text + " (" + self.curToken.kind.name + ")")
 
         # Newline.
         self.nl() #BAG-OH NI
 
     def reassign_Statment(self):
+        # self.matchCurrent_Token(TokenType.IDENT)
+        # identifier = Symbol(self.checkToken.text)
+        # self.nextToken()  # TOKEN BEFORE THE CALL: SOME DECLARED VARIABLE, AFTER THIS CALL WE SHOULD EXPECT A TokenType.EQUAL
+
+        # if self.symbol_table.doesNotExist(identifier.identity):
+        #     self.abort("Variable \"" +self.curToken.text +"\" undeclared!")
+
+        # identifier = self.symbol_table.lookup(identifier.identity)
+        
         self.matchCurrent_Token(TokenType.EQUAL)
         self.nextToken()  # TOKEN BEFORE THE CALL: "=", AFTER THIS CALL WE SHOULD EXPECT A EXPRESSION OR IDENTIFIER WHICH CAN BE DETERMINED BY self.expression()
 
@@ -456,10 +364,17 @@ class Parser:
             self.symbol_table.update(identifier.identity, reassignedValue)
             return reassignedValue
 
+        # elif self.checkPeek(TokenType.NEWLINE): # IF PEEKED TOKEN IS NEWLINE WE CALL self.expression() TO ANALYZE THE VALUE OF A IDENTIFIER WITH/OR EXPRESION
+        #     return self.expression() # self.expression() ALREADY CALLS self.nextToken(), SO NO NEED TO CALL FOR THIS FUNCTION
+
         reassignedValue = self.expression() # self.expression() ALREADY CALLS self.nextToken(), SO NO NEED TO CALL FOR THIS FUNCTION
 
+        self.matchCurrent_Token(TokenType.NEWLINE)
+        
         return reassignedValue
+            # self.symbol_table.update(self.curToken.text, self.expression()) 
 
+ 
     # "INPUT" function
     def inputstmt(self):
         #self.symbo_value = None
@@ -484,7 +399,7 @@ class Parser:
                 self.abort("No variable assigned!")
 
         if self.checkToken(TokenType.EQUAL):
-            #print(self.curToken.text)
+            print(self.curToken.text)
             self.nextToken()
             
             if self.checkToken(TokenType.LITERAL_CHAR):
@@ -502,7 +417,7 @@ class Parser:
                 self.nextToken()
 
             elif self.checkToken(TokenType.IDENT):
-                #print(self.curToken.text)
+                print(self.curToken.text)
                 if type(self.symbol_table.lookup(self.curToken.text).value) == str:
                     self.symbo_value = self.curToken.text
                     self.symbol_table.update(self.symbo_name, self.symbo_value)
@@ -510,10 +425,10 @@ class Parser:
                 else:
                     #print("hello")
                     self.symbo_value = self.expression()
-                    #print(self.symbo_value)
+                    print(self.symbo_value)
                     self.symbol_table.update(self.symbo_name, self.symbo_value)    
             else:
-                #print(self.curToken.text)
+                print(self.curToken.text)
                 self.symbo_value = self.expression()
                 #print(self.symbo_name)
                 #print(self.symbo_value)
@@ -779,9 +694,18 @@ class Parser:
         self.debugPrint("term()")
 
         left = self.unary()
+        # if self.checkToken(TokenType.PARAN_OPEN):
+        #     self.debugPrint("OPEN-PARAN")
+        #     self.nextToken()
+        #     left = self.expression()
+        #     self.matchCurrent_Token(TokenType.PARAN_CLOSE)
+        #     self.debugPrint("CLOSE-PARAN")
+        #     self.nextToken()
+        # else:
+        #     left = self.unary()
 
         # Can have 0 or more *// and expressions.
-        while self.checkToken(TokenType.ASTERISK) or self.checkToken(TokenType.SLASH) or self.checkToken(TokenType.MOD):
+        while self.checkToken(TokenType.ASTERISK) or self.checkToken(TokenType.SLASH):
             operatorToken = self.curToken # WE EXPECT self.curToken TO BE A LOGICAL OPERATOR 
             self.nextToken()
 
@@ -797,8 +721,7 @@ class Parser:
                 left *= right
             elif operatorToken.kind == TokenType.SLASH:
                 left /= right
-            elif operatorToken.kind == TokenType.MOD:
-                left %= right
+
         return left
 
     # unary ::= ("+" | "-") (<numrical_primary>|<expression>)) | ("NOT") (<boolean_primary>|<expression>)) 
@@ -829,15 +752,14 @@ class Parser:
         else:
             result = self.primary()
 
-        if type(result) == str: # IF VALUE IS SOME STRING
+        if type(result) == bool and hasReadNotKeyword: 
+            result = not result
+        elif type(result) == str:
             if hasReadNotKeyword:
                 self.abort("Cannot negate CHAR/STRING,, NOT operator is used in BOOLEAN values")
             elif sign == -1:
-                self.abort("Cannot negate CHAR/STRING, Unary \"-\" [NEGATION] operator is used in numerical values")
-
-        elif hasReadNotKeyword: # IF NOT KEYWORD WAS PRESSENT 
-            result = not result
-        elif sign == -1: # IF UNARY "-" [NEGATION] OPERATOR WAS PRESSENT
+                self.abort("Cannot negate CHAR/STRING, \"-\" [NEGATION] operator is used in numerical values")
+        elif type(result) != bool: # IF NOT A BOOLEAN VALUE
             result = sign * result
         return result
         
@@ -863,11 +785,10 @@ class Parser:
             value = True
         elif self.checkToken(TokenType.FALSE): # IF CURRENT TOKEN IS A KEYWORD "FALSE"
             value = False
+
         else:
-            self.abort("Unexpected " +self.curToken.text +" token, expecting numerical or logical value")
-        # elif self.curToken.text != '=':
-        #     # Error!
-        #     self.abort("Unexpected " +self.curToken.text +" token, expecting numerical or logical value")
+            # Error!
+            self.abort("Unexpected " +self.curToken.text +"token, expecting numerical or logical value")
 
         self.debugPrint("PRIMARY (" +str(value) +")")
         self.nextToken()
