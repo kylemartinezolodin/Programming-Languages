@@ -193,65 +193,59 @@ class Parser:
         
         elif self.checkToken(TokenType.SWITCH):
             self.nextToken()
-            if self.checkToken(TokenType.IDENT): # WON'T ACCEPT EXPRESSION TEMPORARILY
-                if self.symbol_table.doesNotExist(self.curToken.text):
-                    self.abort(f"identifier has no value at {self.curLine}, column {self.curCol}")
-                else:
-                    identifier = self.curToken.text
-                    valueToLookFor = self.symbol_table.lookup(self.curToken.text).getValue()
-                self.nextToken()
-                if not self.checkToken(TokenType.NEWLINE):
-                    self.abort(f"invalid switch statement at line {self.curLine}, column {self.curCol}")
-                else:
-                    self.nl() # ACCEPT NEWLINES
-                    def converter(token,identifier): # CONVERT CURRENT TOKEN ACCORDING TO IDENTIFIER'S DATA TYPE
-                        try:
-                            if self.symbol_table.getdatatype(identifier) == TokenType.INT:
-                                return int(token)
-                            elif self.symbol_table.getdatatype(identifier) == TokenType.FLOAT:
-                                return float(token)
-                            elif self.symbol_table.getdatatype(identifier) == TokenType.CHAR:
-                                return str(token)
-                            elif self.symbol_table.getdatatype(identifier) == TokenType.BOOLEAN:
-                                return bool(token)
-                        except:
-                            return token
+            # try: 
+            expressionValue = self.expression()
+            self.nl() # ACCEPT NEWLINES
+            def converter(token,expressionValue): # CONVERT CURRENT TOKEN ACCORDING TO expressionValue'S DATA TYPE
+                try:
+                    return type(expressionValue)(token)
+                except:
+                    return token
 
-                    flag = False
-                    while not flag:
-
-                        if self.checkToken(TokenType.CASE):
-                            self.nextToken()
-                            if converter(self.curToken.text,identifier) == valueToLookFor:
-                                flag = True
-                            else:
-                                while not self.checkToken(TokenType.CASE) and not self.checkToken(TokenType.DEFAULT):
-                                    self.nextToken()
-                                    if self.checkToken(TokenType.EOF):
-                                        self.abort("invalid switch statement")
-                                    if self.checkToken(TokenType.DEFAULT):
-                                        flag = True
-
-                        elif self.checkToken(TokenType.DEFAULT):
-                                flag = True
-
-                        else:
-                            self.abort(f"invalid switch statement at line {self.curLine}, column {self.curCol}")
-
-                        self.nextToken()
-                        if self.checkToken(TokenType.EOF):
-                            self.abort("invalid switch statement")
-
+            flag = False
+            while not flag:
+                if self.checkToken(TokenType.CASE):
                     self.nextToken()
-                    if self.checkToken(TokenType.START):
-                        self.startStop()
-                        while not self.checkToken(TokenType.ENDSWITCH):
-                            self.nextToken()
-                        self.nextToken()
+                    if self.checkToken(TokenType.IDENT):
+                        if self.symbol_table.doesNotExist(self.curToken.text):
+                            self.abort(f"invalid switch statement at line {self.curLine}, column {self.curCol}")
+                        else:
+                            caseValue = self.symbol_table.lookup(self.curToken.text).value
                     else:
-                        self.abort(f"invalid switch statement at line {self.curLine}, column {self.curCol}")
+                        caseValue = converter(self.curToken.text,expressionValue)
+
+                    if caseValue == expressionValue:
+                        flag = True
+                    else:
+                        while not self.checkToken(TokenType.CASE) and not self.checkToken(TokenType.DEFAULT):
+                            self.nextToken()
+                            if self.checkToken(TokenType.EOF):
+                                self.abort("invalid switch statement")
+                            if self.checkToken(TokenType.DEFAULT):
+                                flag = True
+
+                elif self.checkToken(TokenType.DEFAULT):
+                        flag = True
+
+                else:
+                    self.abort(f"invalid switch statement at line {self.curLine}, column {self.curCol} {self.curToken.text}211")
+                
+                if not self.checkToken(TokenType.CASE):
+                    self.nextToken()
+
+                if self.checkToken(TokenType.EOF):
+                    self.abort("invalid switch statement")
+
+            self.nextToken()
+            if self.checkToken(TokenType.START):
+                self.startStop()
+                while not self.checkToken(TokenType.ENDSWITCH):
+                    self.nextToken()
+                self.nextToken()
             else:
-                self.abort(f"invalid switch statement at line {self.curLine}, column {self.curCol}")
+                self.abort(f"invalid switch statement at line {self.curLine}, column {self.curCol} 244")
+            # except:
+            #     self.abort(f"invalid switch statement at line {self.curLine}, column {self.curCol} 255")
             
 
         
