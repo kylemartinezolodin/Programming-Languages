@@ -1,0 +1,185 @@
+**************************INT TEST CASES*******************************
+* TEST INT VAR STATEMENT WITH MULTIPLE = (NO ERROR)
+VAR intVar1, intVar2, intVar3 AS INT
+START
+    intVar1 = 1
+    intVar2 = intVar3 = intVar1
+    OUTPUT: "intVar1 = " & intVar1 & ", intVar2 =  " & intVar2 & ", intVar3 = " & intVar3
+STOP
+
+* TEST INT VAR WITH FLOAT VALUE (NO ERROR)
+VAR intVar4 AS INT
+START
+    intVar4 = 5.2
+    OUTPUT: "intVar4 = " & intVar4 
+STOP
+
+* TEST INT VAR WITH CHAR VALUE (ERROR)
+*VAR intVar5 AS INT
+*START
+*    intVar5 = 'a'
+*    OUTPUT: "intVar5 = " & intVar5
+*STOP
+
+* TEST INT VAR WITH BOOL VALUE (ERROR)
+*VAR intVar6 AS INT
+*START
+*    intVar6 = "TRUE"
+*    OUTPUT: "intVar6 = " & intVar6
+*STOP
+
+* TEST INT VAR WITH STRING VALUE (ERROR)
+*VAR intVar7 AS INT
+*START
+*    intVar7 = "HELLO"
+*    OUTPUT: "intVar7= " & intVar7 
+*STOP
+
+**************************FLOAT TEST CASES*******************************
+
+* TEST FLOAT VAR WITH MULTIPLE = (NO ERROR)
+VAR floatVar1, floatVar2, floatVar3 AS FLOAT
+START
+    floatVar1 = 1.5
+    floatVar2 = floatVar3 = floatVar1
+    OUTPUT: "floatVar1 = " & floatVar1 & ", floatVar2 = " & floatVar2 & ", floatVar3 = " & floatVar3
+STOP
+
+* TEST FLOAT VAR WITH INT VALUE (NO ERROR)
+VAR floatVar4 AS FLOAT
+START
+    floatVar4 = 5
+    OUTPUT: "floatVar4 = " & floatVar4 
+STOP
+
+* TEST FLOAT VAR WITH CHAR VALUE (ERROR)
+*VAR floatVar5 AS FLOAT
+*START
+*    floatVar5 = 'A'
+*    OUTPUT: "floatVar5 = " & floatVar5
+*STOP
+
+* TEST FLOAT VAR WITH BOOL VALUE (ERROR)
+*VAR floatVar6 AS FLOAT
+*START
+*    floatVar6 = "TRUE"
+*    OUTPUT: "floatVar6 = " & floatVar6
+*STOP
+
+* TEST FLOAT VAR WITH STRING VALUE (ERROR)
+*VAR floatVar7 AS FLOAT
+*START
+*    floatVar7 = "HELLO"
+*    OUTPUT: "floatVar7= " & floatVar7 
+*STOP
+
+**************************CHAR TEST CASES*******************************
+
+* TEST CHAR VAR WITH MULTIPLE = (NO ERROR)
+VAR charVar1, charVar2, charVar3 AS CHAR
+START
+    charVar1 = charVar2 = charVar3 = 'A'
+    OUTPUT: "charVar1 = " & charVar1 & ", charVar2 = " & charVar2 & ", charVar3 = " & charVar3
+STOP
+
+* TEST CHAR VAR WITH INT VALUE (ERROR)
+*VAR charVar5 AS CHAR
+*START
+*    charVar5 = 1
+*    OUTPUT: "charVar5 = " & charVar5
+*STOP
+
+* TEST CHAR VAR WITH FLOAT VALUE (ERROR)
+*VAR charVar6 AS CHAR
+*START
+*    charVar6 = 1.5
+*    OUTPUT: "charVar6 = " & charVar6
+*STOP
+
+* TEST CHAR VAR WITH BOOL VALUE (ERROR)
+*VAR charVar7 AS CHAR
+*START
+*    charVar7 = "TRUE"
+*    OUTPUT: "charVar7= " & charVar7 
+*STOP
+
+* TEST CHAR VAR WITH STRING VALUE (ERROR)
+*VAR charVar4 AS CHAR
+*START
+*    charVar4 = "AB"
+*    OUTPUT: "charVar4 = " & charVar4 
+*STOP
+
+**************************BOOL TEST CASES*******************************
+
+* TEST BOOL VAR WITH COMMAS (NO ERROR)
+VAR boolVar1, boolVar2, boolVar3 AS BOOL
+START
+    boolVar1 = boolVar2 = boolVar3 = "TRUE"
+    OUTPUT: "boolVar1 = " & boolVar1 & ", boolVar2 = " & boolVar2 & ", boolVar3 = " & boolVar3
+STOP
+
+* TEST BOOL VAR WITH INT VALUE (ERROR)
+*VAR boolVar5 AS BOOL
+*START
+*    boolVar5 = 1
+*    OUTPUT: "boolVar5 = " & boolVar5
+*STOP
+
+* TEST BOOL VAR WITH FLOAT VALUE (ERROR)
+*VAR boolVar6 AS BOOL
+*START
+*    boolVar6 = 1.5
+*    OUTPUT: "boolVar6 = " & boolVar6
+*STOP
+
+* TEST BOOL VAR WITH CHAR VALUE (ERROR)
+*VAR boolVar7 AS BOOL
+*START
+*    boolVar7 = 'a'
+*    OUTPUT: "boolVar7= " & boolVar7 
+*STOP
+
+* TEST BOOL VAR WITH STRING VALUE (ERROR)
+*VAR boolVar4 AS BOOL
+*START
+*    boolVar4 = "AB"
+*    OUTPUT: "boolVar4 = " & boolVar4 
+*STOP
+
+**************************STRING TEST CASES*******************************
+
+* TEST STRING VAR WITH COMMAS (NO ERROR)
+VAR strVar1, strVar2, strVar3 AS STRING
+START
+    strVar1 = strVar2 = strVar3 = "HELLO WORLD"
+    OUTPUT: "strVar1 = " & strVar1 & ", strVar2 = " & strVar2 & ", strVar3 = " & strVar3
+STOP
+
+* TEST STRING VAR WITH INT VALUE (ERROR)
+*VAR strVar5 AS STRING
+*START
+*    strVar5 = 1
+*    OUTPUT: "strVar5 = " & strVar5
+*STOP
+
+* TEST STRING VAR WITH FLOAT VALUE (ERROR)
+*VAR strVar6 AS STRING
+*START
+*    strVar6 = 1.5
+*    OUTPUT: "strVar6 = " & strVar6
+*STOP
+
+* TEST STRING VAR WITH CHAR VALUE (ERROR)
+*VAR strVar7 AS STRING
+*START
+*    strVar7 = 'a'
+*    OUTPUT: "strVar7= " & strVar7 
+*STOP
+
+* TEST STRING VAR WITH BOOL VALUE (NO ERROR)
+VAR strVar4 AS STRING
+START
+    strVar4 = "FALSE"
+    OUTPUT: "strVar4 = " & strVar4 
+STOP

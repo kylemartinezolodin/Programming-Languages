@@ -49,6 +49,16 @@ IF (ifTestVar1 == 1) START
     OUTPUT: "ifTestVar1 Value: " & ifTestVar1
 STOP
 
+*TEST IF STATEMENT WITH WHILE INSIDE
+VAR flag = "TRUE" AS BOOL
+VAR i = 1 AS INT
+IF(flag) START
+    WHILE(i < 5) START
+        OUTPUT: "i = " & i
+        i = i + 1
+    STOP
+STOP
+
 * TEST CHAR VAR STATEMENT, SHOULD ERROR THAT ITS EXPECTING AN APPOSTROPHE
 *VAR cfplCharWithMoreThanOneChar = 'KA' AS CHAR
 *OUTPUT: someValidAssingment
@@ -71,7 +81,7 @@ OUTPUT: someValidAssingment
 *OUTPUT: charUsedWithNumericalOperation
 
 
-*COMPARE THIS STATEMENT AND ITS OUTPUT TO THE STATMENT EARLIER
+*COMPARE THIS STATEMENT AND ITS OUTPUT TO THE STATEMENT EARLIER
 msk = NOT ("FALSE" OR (6 < 7))
 OUTPUT: "NOT (["]FALSE["] OR (6 < 7)): " & msk
 

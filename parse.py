@@ -136,7 +136,8 @@ class Parser:
                         # Expect an expression.
                         output = self.expression()
                         if type(output) == str: # IF THE OUPUT WILL BE A STRING OR CHAR
-                            output = output[1:-1] # REMOVE THE FIRST AND LAST CHARACTER WHICH IS LIKELY SOME APPOSTHROPHES
+                            if (output[1] == '"' and output[-1]) == '"' or (output[1] == '\'' and output[-1] == '\''):
+                                output = output[1:-1] # REMOVE THE FIRST AND LAST CHARACTER WHICH IS LIKELY SOME APPOSTHROPHES
                         print(output, end="")
                         # value = self.expression()
                         # tempToken = self.curToken
@@ -698,9 +699,9 @@ class Parser:
 
         elif self.checkToken(TokenType.AS):
             self.nextToken()
-
+            
             # ALLOWED DATA TYPES FOR THE CFPL
-            if self.checkToken(TokenType.STRING) or self.checkToken(TokenType.CHAR) or self.checkToken(TokenType.INT) or self.checkToken(TokenType.FLOAT) or self.checkToken(TokenType.BOOL):
+            if self.checkToken(TokenType.STRINGK) or self.checkToken(TokenType.CHAR) or self.checkToken(TokenType.INT) or self.checkToken(TokenType.FLOAT) or self.checkToken(TokenType.BOOL):
                 identType = self.curToken.kind
                 tempSymbol.dataType = identType
                 self.nextToken()
@@ -709,7 +710,10 @@ class Parser:
                 self.abort("Expecting Data-Type definition [CHAR | INT | FLOAT | BOOL], got " +self.curToken.kind.name)
         
         else: # ERROR 
-            self.abort("Expecting \",\" [COMMA] | \"AS\" keyword, got " +self.curToken.kind.name)
+            if self.curToken.kind == TokenType.IDENT:
+                self.abort("Expecting \",\" [COMMA], got " +self.curToken.kind.name)
+            else:    
+                self.abort("Expecting \"AS\" keyword, got " +self.curToken.kind.name)
 
 
     # expression ::= term {( "-" | "+" ) | term}  #BAG-OH NI #WTF FIX THIS
@@ -871,7 +875,6 @@ class Parser:
         #     # Error!
         #     self.abort("Unexpected " +self.curToken.text +" token, expecting numerical or logical value")
 
-        
         self.debugPrint("PRIMARY (" +str(value) +")")
         self.nextToken()
         return value
