@@ -157,7 +157,7 @@ class Lexer:
             self.nextChar() # AFTER THE CALL WE EXPECT SINGLE APOSTROPHE
             
             if self.curChar != '\'': # ERROR SINCE WE STOPPED AT NEWLINE INSTEAD OF A UNESCAPED DOUBLE APPOSTROPHE
-                self.abort("Expecting closing single appostrophe [\'] ")
+                self.abort("Must only contain one character.Expecting closing single appostrophe [\'] ")
             
             token = self.tokenize(tokText)
 
@@ -282,7 +282,6 @@ class Lexer:
                 token = Token(True, TokenType.TRUE)
                 # token = Token("1", TokenType.TRUE)
             elif text == "\"FALSE\"":
-                self.nextChar()
                 token = Token(False, TokenType.FALSE)
                 # token = Token("0", TokenType.FALSE)
 
@@ -384,6 +383,8 @@ class Lexer:
                     if Token.checkIfKeyword(text.upper()): # CHECKS IF IT ONLY NEEDS TO BE UPPERCASED
                         token = Token(text, None)
                         # self.abort(text + " must be capitalized!")
+                    elif text == "STRING":
+                        token = Token(text, TokenType.STRINGK)
                     else:
                         token = Token(text, TokenType.IDENT)
 
@@ -448,7 +449,7 @@ class TokenType(enum.Enum):
     CASE = 114
     DEFAULT = 115
     ENDSWITCH = 116
-
+    STRINGK = 117
     # LABEL = 101
 	# GOTO = 102
 	# REPEAT = 110

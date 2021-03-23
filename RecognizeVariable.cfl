@@ -1,0 +1,184 @@
+**************************INT TEST CASES*******************************
+* TEST INT VAR STATEMENT WITH COMMAS (NO ERROR)
+VAR intVar1, intVar2 = 5, intVar3 = intVar2 AS INT
+START
+    OUTPUT: "intVar1 = " & intVar1 & ", intVar2 =  " & intVar2 & ", intVar3 = " & intVar3
+STOP
+
+* TEST INT VAR WITH FLOAT VALUE (NO ERROR)
+VAR intVar4 = 5.2 AS INT
+START
+    OUTPUT: "intVar4 = " & intVar4 
+STOP
+
+* TEST INT VAR WITH CHAR VALUE (ERROR)
+*VAR intVar5 = 'A' AS INT
+*START
+*    OUTPUT: "intVar5 = " & intVar5
+*STOP
+
+* TEST INT VAR WITH BOOL VALUE (ERROR)
+*VAR intVar6 = "TRUE" AS INT
+*START
+*    OUTPUT: "intVar6 = " & intVar6
+*STOP
+
+* TEST INT VAR WITH STRING VALUE (ERROR)
+*VAR intVar7 = "HELLO" AS INT
+*START
+*    OUTPUT: "intVar7= " & intVar7 
+*STOP
+
+**************************FLOAT TEST CASES*******************************
+
+* TEST FLOAT VAR WITH COMMAS (NO ERROR)
+VAR floatVar1 = 5.2, floatVar2 = floatVar1, floatVar3 = 5.5 AS FLOAT
+START
+    OUTPUT: "floatVar1 = " & floatVar1 & ", floatVar2 = " & floatVar2 & ", floatVar3 = " & floatVar3
+STOP
+
+* TEST FLOAT VAR WITH INT VALUE (NO ERROR)
+VAR floatVar4 = 5 AS FLOAT
+START
+    OUTPUT: "floatVar4 = " & floatVar4 
+STOP
+
+* TEST FLOAT VAR WITH CHAR VALUE (ERROR)
+*VAR floatVar5 = 'A' AS FLOAT
+*START
+*    OUTPUT: "floatVar5 = " & floatVar5
+*STOP
+
+* TEST FLOAT VAR WITH BOOL VALUE (ERROR)
+*VAR floatVar6 = "TRUE" AS FLOAT
+*START
+*    OUTPUT: "floatVar6 = " & floatVar6
+*STOP
+
+* TEST FLOAT VAR WITH STRING VALUE (ERROR)
+*VAR floatVar7 = "HELLO" AS FLOAT
+*START
+*    OUTPUT: "floatVar7= " & floatVar7 
+*STOP
+
+**************************CHAR TEST CASES*******************************
+
+* TEST CHAR VAR WITH COMMAS (NO ERROR)
+VAR charVar1 = 'A', charVar2 = 'B', charVar3 = charVar1 AS CHAR
+START
+    OUTPUT: "charVar1 = " & charVar1 & ", charVar2 = " & charVar2 & ", charVar3 = " & charVar3
+STOP
+
+* TEST CHAR VAR WITH INT VALUE (ERROR)
+*VAR charVar5 = 1 AS CHAR
+*START
+*    OUTPUT: "charVar5 = " & charVar5
+*STOP
+
+* TEST CHAR VAR WITH FLOAT VALUE (ERROR)
+*VAR charVar6 = 1.5 AS CHAR
+*START
+*    OUTPUT: "charVar6 = " & charVar6
+*STOP
+
+* TEST CHAR VAR WITH BOOL VALUE (ERROR)
+*VAR charVar7 = "TRUE" AS CHAR
+*START
+*    OUTPUT: "charVar7= " & charVar7 
+*STOP
+
+* TEST CHAR VAR WITH STRING VALUE (ERROR)
+*VAR charVar4 = "AB" AS CHAR
+*START
+*    OUTPUT: "charVar4 = " & charVar4 
+*STOP
+
+**************************BOOL TEST CASES*******************************
+
+* TEST BOOL VAR WITH COMMAS (NO ERROR)
+VAR boolVar1 = "TRUE", boolVar2 = "FALSE", boolVar3 = "TRUE" AS BOOL
+START
+    OUTPUT: "boolVar1 = " & boolVar1 & ", boolVar2 = " & boolVar2 & ", boolVar3 = " & boolVar3
+STOP
+
+* TEST BOOL VAR WITH INT VALUE (ERROR)
+*VAR boolVar5 = 1 AS BOOL
+*START
+*    OUTPUT: "boolVar5 = " & boolVar5
+*STOP
+
+* TEST BOOL VAR WITH FLOAT VALUE (ERROR)
+*VAR boolVar6 = 1.5 AS BOOL
+*START
+*    OUTPUT: "boolVar6 = " & boolVar6
+*STOP
+
+* TEST BOOL VAR WITH CHAR VALUE (ERROR)
+*VAR boolVar7 = 'a' AS BOOL
+*START
+*    OUTPUT: "boolVar7= " & boolVar7 
+*STOP
+
+* TEST BOOL VAR WITH STRING VALUE (ERROR)
+*VAR boolVar4 = "AB" AS BOOL
+*START
+*    OUTPUT: "boolVar4 = " & boolVar4 
+*STOP
+
+**************************STRING TEST CASES*******************************
+
+* TEST STRING VAR WITH COMMAS (NO ERROR)
+VAR strVar1 = "HELLO", strVar2 = "WORLD", strVar3 = strVar1 AS STRING
+START
+    OUTPUT: "strVar1 = " & strVar1 & ", strVar2 = " & strVar2 & ", strVar3 = " & strVar3
+STOP
+
+* TEST STRING VAR WITH INT VALUE (ERROR)
+*VAR strVar5 = 1 AS STRING
+*START
+*    OUTPUT: "strVar5 = " & strVar5
+*STOP
+
+* TEST STRING VAR WITH FLOAT VALUE (ERROR)
+*VAR strVar6 = 1.5 AS STRING
+*START
+*    OUTPUT: "strVar6 = " & strVar6
+*STOP
+
+* TEST STRING VAR WITH CHAR VALUE (ERROR)
+*VAR strVar7 = 'a' AS STRING
+*START
+*    OUTPUT: "strVar7= " & strVar7 
+*STOP
+
+* TEST STRING VAR WITH BOOL VALUE (NO ERROR)
+VAR strVar4 = "FALSE" AS STRING
+START
+    OUTPUT: "strVar4 = " & strVar4 
+STOP
+
+**************************OTHER TEST CASES*******************************
+
+*NOT DECLARED VARIABLE, VARIABLE DOES NOT EXIST (ERROR)
+*VAR intVar8 AS INT
+*START
+*    OUTPUT: "intVar9 = " & intVar9
+*STOP
+
+*NO COMMA (ERROR)
+VAR intVar8 intVar9 AS INT
+START
+    OUTPUT: "intVar8 = " & intVar8
+STOP
+
+*NO AS KEYWORD (ERROR)
+*VAR intVar8, intVar9 INT
+*START
+*    OUTPUT: "intVar8 = " & intVar8
+*STOP
+
+*NO DATATYPE (ERROR)
+*VAR intVar8, intVar9 AS
+*START
+*    OUTPUT: "intVar8 = " & intVar8
+*STOP
