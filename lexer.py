@@ -383,8 +383,8 @@ class Lexer:
                     if Token.checkIfKeyword(text.upper()): # CHECKS IF IT ONLY NEEDS TO BE UPPERCASED
                         token = Token(text, None)
                         # self.abort(text + " must be capitalized!")
-                    elif text == "STRING":
-                        token = Token(text, TokenType.STRINGK)
+                    # elif text == "STRING":
+                    #     token = Token(text, TokenType.STRINGK)
                     else:
                         token = Token(text, TokenType.IDENT)
 
@@ -423,7 +423,7 @@ class TokenType(enum.Enum):
     INUMBER = 1  # INT NUMBER
     FNUMBER = 2  # FLOAT NUMBER  
     IDENT = 3
-    STRING = 4
+    LITERAL_STRING = 4
     COMMA = 5
     LITERAL_CHAR = 6   # INPUT CHAR
     TRUE = 7
@@ -441,15 +441,16 @@ class TokenType(enum.Enum):
     FLOAT = 106
     BOOL = 107
     CHAR = 108
-    IF = 109
-    ELSE = 110
-    ELIF = 111
-    WHILE = 112
-    SWITCH = 113
-    CASE = 114
-    DEFAULT = 115
-    ENDSWITCH = 116
-    STRINGK = 117
+    STRING = 109
+    IF = 110
+    ELSE = 111
+    ELIF = 112
+    WHILE = 113
+    SWITCH = 114
+    CASE = 115
+    DEFAULT = 116
+    ENDSWITCH = 117
+    # STRING = 117
     # LABEL = 101
 	# GOTO = 102
 	# REPEAT = 110

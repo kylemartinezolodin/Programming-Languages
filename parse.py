@@ -702,13 +702,13 @@ class Parser:
             self.nextToken()
             
             # ALLOWED DATA TYPES FOR THE CFPL
-            if self.checkToken(TokenType.STRINGK) or self.checkToken(TokenType.CHAR) or self.checkToken(TokenType.INT) or self.checkToken(TokenType.FLOAT) or self.checkToken(TokenType.BOOL):
+            if self.checkToken(TokenType.STRING) or self.checkToken(TokenType.CHAR) or self.checkToken(TokenType.INT) or self.checkToken(TokenType.FLOAT) or self.checkToken(TokenType.BOOL):
                 identType = self.curToken.kind
                 tempSymbol.dataType = identType
                 self.nextToken()
                 return identType
             else:
-                self.abort("Expecting Data-Type definition [CHAR | INT | FLOAT | BOOL], got " +self.curToken.kind.name)
+                self.abort("Expecting Data-Type definition [CHAR | STRING | INT | FLOAT | BOOL], got " +self.curToken.kind.name)
         
         else: # ERROR 
             if self.curToken.kind == TokenType.IDENT:

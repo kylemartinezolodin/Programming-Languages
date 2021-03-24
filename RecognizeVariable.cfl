@@ -166,10 +166,10 @@ STOP
 *STOP
 
 *NO COMMA (ERROR)
-VAR intVar8 intVar9 AS INT
-START
-    OUTPUT: "intVar8 = " & intVar8
-STOP
+*VAR intVar8 intVar9 AS INT
+*START
+*    OUTPUT: "intVar8 = " & intVar8
+*STOP
 
 *NO AS KEYWORD (ERROR)
 *VAR intVar8, intVar9 INT

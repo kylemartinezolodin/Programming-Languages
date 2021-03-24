@@ -56,7 +56,7 @@ class Symbol:
     def setDataType(self, symboType):
         if self._value != None:
             # CHECK IF ITS IS NOT A STRING, OR DOES NOT HAVE A DOUBLE APPOSTROPHE IN THE START AND AT THE END OF THE STRING
-            if symboType == TokenType.STRINGK and ( type(self._value) != str or (self._value[0] != "\"" and self._value[-1] != "\"") ):
+            if symboType == TokenType.STRING and ( type(self._value) != str or (self._value[0] != "\"" and self._value[-1] != "\"") ):
                 if type(self.value) == bool:
                     self.value = str(self.value)
                 else:
@@ -86,7 +86,7 @@ class Symbol:
     def getValue(self):
         ret = None
         if self._value == None and self._dataType != None:
-            if self.dataType == TokenType.CHAR or self.dataType == TokenType.STRINGK:
+            if self.dataType == TokenType.CHAR or self.dataType == TokenType.STRING:
                 ret = "\0"
             elif self.dataType == TokenType.INT:
                 ret = 0
@@ -103,27 +103,27 @@ class Symbol:
     def setValue(self, val):
         if self._dataType != None:
             if type(val) == str:
-                if val[0] == "\'" and (self.dataType != TokenType.CHAR or len(val) != 3):
-                    self.abort("Assigned value must be a "+ str(self.dataType)[10:] +", instead of a CHAR") #IF ASSIGNED VALUE IS CHAR
-                elif val[0] == "\"" and self.dataType != TokenType.STRINGK:
-                    self.abort("Assigned value must be a "+ str(self.dataType)[10:]+", instead of a STRING") #IF ASSIGNED VALUE IS STRING
+                if (val[0] == "\'" and val[-1] == "\'") and (self.dataType != TokenType.CHAR or len(val) != 3):
+                    self.abort("Assigned value must be a "+ str(self.dataType.kind.name) +", instead of a CHAR") #IF ASSIGNED VALUE IS CHAR
+                elif (val[0] == "\"" and val[-1] == "\"") and self.dataType != TokenType.STRING:
+                    self.abort("Assigned value must be a "+ str(self.dataType.kind.name) +", instead of a STRING") #IF ASSIGNED VALUE IS STRING
                 # else:
                 #     self._value = val[1:len(val)-1]
             elif type(val) == int and self.dataType != TokenType.INT:
                 if self.dataType == TokenType.FLOAT:
                     val = float(val)
                 else:
-                    self.abort("Assigned value must be a "+ str(self.dataType)[10:]+", instead of an INT") #IF ASSIGNED VALUE IS INT
+                    self.abort("Assigned value must be a "+ str(self.dataType.kind.name)+", instead of an INT") #IF ASSIGNED VALUE IS INT
             elif type(val) == float and self.dataType != TokenType.FLOAT:
                 if self.dataType == TokenType.INT:
                     val = int(val)
                 else:
-                    self.abort("Assigned value must be a "+ str(self.dataType)[10:] +", instead of a FLOAT") #IF ASSIGNED VALUE IS FLOAT
+                    self.abort("Assigned value must be a "+ str(self.dataType.kind.name) +", instead of a FLOAT") #IF ASSIGNED VALUE IS FLOAT
             elif type(val) == bool and self.dataType != TokenType.BOOL:
-                if(self.dataType == TokenType.STRINGK):
+                if(self.dataType == TokenType.STRING):
                     val = str(val)
                 else:
-                    self.abort("Assigned value must be a "+ str(self.dataType)[10:] +", instead of a BOOL") #IF ASSIGNED VALUE IS BOOL
+                    self.abort("Assigned value must be a "+ str(self.dataType.kind.name) +", instead of a BOOL") #IF ASSIGNED VALUE IS BOOL
 
         self._value = val
         # if type(val) == str:
