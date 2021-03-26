@@ -1,8 +1,10 @@
 * TEST NESTED WHILE WITH IF STATEMENT
 VAR nestedWhile1 = 1, nestedWhile2 = 1 AS INT
+START
 WHILE (nestedWhile1 <> 5) START
     nestedWhile2 = 1
-    WHILE (nestedWhile2 <= 2) START
+    WHILE (nestedWhile2 <= 2) 
+        START
         IF(nestedWhile1 % 3 == 0) START
             OUTPUT: nestedWhile1 & "." & nestedWhile2 & " Leading Number is divisible by 3!"
         STOP

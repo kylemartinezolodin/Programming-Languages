@@ -88,10 +88,48 @@ class Parser:
         # Since some newlines are required in our grammar, need to skip the excess.
         while self.checkToken(TokenType.NEWLINE):
             self.nextToken()
-
+            
+        mainStartStopStack = []
+        
         # Parse all the statements in the program. Will continue to call statement until there is nothing left.
-        while not self.checkToken(TokenType.EOF) or self.checkToken(TokenType.STOP):
-            self.statement()
+        while not self.checkToken(TokenType.EOF):
+            if self.checkToken(TokenType.START):
+                self.debugPrint("MAIN START STATEMENT")
+                print("MAIN START STATEMENT")
+                if len(mainStartStopStack) > 0: # IF THERE WAS ALREADY A START STATEMENT BEFORE
+                    self.abort("There can only be one Main START-STOP block")
+                else:
+                    mainStartStopStack.append("START")
+
+                self.nextToken()
+                self.nl()
+
+            elif self.checkToken(TokenType.STOP):
+                print("MAIN STOP STATEMENT")
+                self.debugPrint("MAIN STOP STATEMENT")
+
+                if len(mainStartStopStack) == 0: # IF THERE IS NO PAIR FOR THE STOP STATEMENT
+                    self.abort("Missing START keyword")
+                else:
+                    mainStartStopStack.remove("START")
+
+                self.nextToken()
+                self.nl()
+                break
+
+            elif self.checkToken(TokenType.VAR) or self.checkToken(TokenType.ASTERISK):
+                if self.checkToken(TokenType.VAR) and len(mainStartStopStack) == 1:
+                    self.abort("Error: VAR declaration must be outside START/STOP")
+                self.statement()
+            elif len(mainStartStopStack) == 1:
+                self.statement()
+            else:
+                while not self.checkToken(TokenType.NEWLINE):
+                    self.nextToken()
+                self.nl()
+
+        if len(mainStartStopStack) != 0: # IF THE STACK HAS REAMAINING START KEYWORD CALLS
+            self.abort("Error: Missing STOP keyword")
             
         if self.debug:
             print("PARSER: DEBUG PROPERTY IS SET TO TRUE, SET TO FALSE TO DISABLE UNESSACARY PRINTS")
@@ -164,14 +202,14 @@ class Parser:
             print("\n", end="") # AESTHETIC DEBUGGUNG PURPOSES, I DELETE NYA NI 
         
         #"START" ident; recursively calls itself until it finds a STOP statement
-        elif self.checkToken(TokenType.START):
-            self.startStop()
+        # elif self.checkToken(TokenType.START):
+        #     self.startStop()
         
         #If parser detects a STOP statement after recursively calling startStop() is done, that means there are extra STOP statements
-        elif self.checkToken(TokenType.STOP):
-            self.debugPrint("Warning: STOP statement doesn't have a preceding START statement ("+str((self.depth-1)*-1)+")")
-            self.depth -= 1
-            self.nextToken()
+        # elif self.checkToken(TokenType.STOP):
+        #     self.debugPrint("Warning: STOP statement doesn't have a preceding START statement ("+str((self.depth-1)*-1)+")")
+        #     self.depth -= 1
+        #     self.nextToken()
 
 
         # "VAR" ident "=" (number | char | boolean | {expression} | ident) AS (INT | FLOAT | CHAR | BOOL)
