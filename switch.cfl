@@ -2,21 +2,23 @@ VAR iden = 1 AS INT
 VAR iden2 = 2 AS INT
 VAR iden3 = 3 AS INT
 
-SWITCH (iden2+2)
-    CASE iden
-        START
-        OUTPUT: "First case"
-        STOP
-    CASE iden2
-        START
-        OUTPUT: "Second Case"
-        STOP
-    CASE iden3
-        START
-        OUTPUT: "Third Case"
-        STOP
-    DEFAULT
-        START
-        OUTPUT: "Default"
-        STOP
-ENDSWITCH
+START
+    SWITCH (iden+iden2)
+        CASE 1
+            START
+            OUTPUT: "First case"
+            STOP
+        CASE 2
+            START
+            OUTPUT: "Second Case"
+            STOP
+        CASE 3
+            START
+            OUTPUT: "Third Case"
+            STOP
+        DEFAULT
+            START
+            OUTPUT: "Default"
+            STOP
+    ENDSWITCH
+STOP
